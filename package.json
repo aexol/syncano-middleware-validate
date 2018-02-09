@@ -1,0 +1,19 @@
+{
+  "name": "syncano-middleware-validate",
+  "version": "0.0.1",
+  "description": "Run syncano-validate library as middleware.",
+  "main": "lib/middleware.js",
+  "repository": "https://gitlab.com/Aexol/syncano-middleware-validate.git",
+  "author": "Aexol",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/node": "^4.0.36",
+    "tslint": "^5.9.1",
+    "typescript": "^2.7.1"
+  },
+  "dependencies": {
+    "syncano-middleware": "https://github.com/aexol/syncano-middleware.git",
+    "syncano-validate": "^0.5.1"
+  }
+}
