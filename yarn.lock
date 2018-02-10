@@ -762,7 +762,7 @@ supports-color@^4.0.0:
 
 "syncano-middleware@https://github.com/aexol/syncano-middleware.git":
   version "0.0.1"
-  resolved "https://github.com/aexol/syncano-middleware.git#f30b62cc5d85c7ad69e112f77b32d2a2064da752"
+  resolved "https://github.com/aexol/syncano-middleware.git#5a2d34f39f3441f7774a23ffbb7b3e67d0c11a2c"
   dependencies:
     "@syncano/core" "^0.8.0"
     lodash.merge "^4.6.1"
