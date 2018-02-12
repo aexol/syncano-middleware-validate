@@ -8,6 +8,9 @@
   "author": "Aexol",
   "license": "MIT",
   "private": false,
+  "scripts": {
+    "build": "npx tsc"
+  },
   "devDependencies": {
     "@types/node": "^4.0.36",
     "tslint": "^5.9.1",
