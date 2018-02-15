@@ -8,7 +8,7 @@
       "curly": [true, "ignore-same-line"],
       "no-conditional-assignment": true,
       "no-duplicate-super": true,
-      "no-any": true,
+      "no-any": false,
       "no-var-requires": true,
       "only-arrow-functions": [true, "allow-declarations", "allow-named-functions"],
       "promise-function-async": true,
@@ -34,7 +34,8 @@
       "whitespace": [true, "check-branch", "check-operator", "check-typecast"],
       "return-undefined": true,
       "quotemark": [true, "single", "avoid-escape", "avoid-template"],
-      "indent": [true, "spaces", 2]
+      "indent": [true, "spaces", 2],
+      "max-classes-per-file": [true, 5, "exclude-class-expressions"]
     },
     "rulesDirectory": []
 }

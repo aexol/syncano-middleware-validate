@@ -1,1 +1,1 @@
-declare module "syncano-validate";
+declare module "@syncano/core";

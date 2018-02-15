@@ -1,18 +1,29 @@
-import {IHandler, IResponse, IResponsePayload, IResponseStatus, ISyncanoContext} from 'syncano-middleware';
-import {validate} from 'syncano-validate';
-export class ValidatePlugin {
-  constructor(private handler: IHandler, public rules?: object) {}
-  public handle(ctx: ISyncanoContext, syncano: object): Promise<IResponse|IResponsePayload|IResponseStatus> {
+import {HandlerFn, IResponse, IResponsePayload, IResponseStatus, ISyncanoContext} from 'syncano-middleware';
+import { IConstraints } from './constraints';
+import { MetaParser } from './meta_parser';
+import validators from './validators';
 
-    return validate(ctx.args, this.rules).catch((e: Error): void => {
-      throw {
-        payload: e,
-        status: 400,
-      };
-    }).then(() => this.handler(ctx, syncano));
+export class ValidatePlugin {
+  constructor(private handler: HandlerFn,
+              private endpointMeta: IConstraints) {}
+  public async handle(ctx: ISyncanoContext,
+                      syncano: object): Promise<IResponse|IResponsePayload|IResponseStatus> {
+    const validationResult = this.endpointMeta.test(ctx.args, validators);
+    if (validationResult) {
+      throw validationResult;
+    }
+    return this.handler(ctx, syncano);
   }
 }
 
-export default (handler: IHandler, rules?: object): IHandler =>
+async function makeValidator( ctx: ISyncanoContext,
+                              handler: HandlerFn): Promise<ValidatePlugin> {
+  return new MetaParser()
+    .getMeta(ctx)
+    .then(endpointMeta => new ValidatePlugin(handler, endpointMeta));
+}
+
+export default (handler: HandlerFn): HandlerFn =>
   (ctx: ISyncanoContext, syncano: object): Promise<IResponse|IResponsePayload|IResponseStatus> =>
-    (new ValidatePlugin(handler, rules)).handle(ctx, syncano);
+      makeValidator(ctx, handler)
+      .then(validator => validator.handle(ctx, syncano));
