@@ -13,6 +13,9 @@ export class Match extends Validator {
   }
 
   public test(value: any): boolean {
+    if (!validateJs.isDefined(value)) {
+      return true;
+    }
     if (typeof value !== 'string') {
       return false;
     }

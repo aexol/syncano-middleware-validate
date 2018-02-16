@@ -1,9 +1,7 @@
-import { ISyncanoEndpoint } from './syncano_endpoint';
+import { RequestArgs, RequestMetaMetadata } from '@syncano/core';
 import { IValidationError } from './validator';
 import { IValidators } from './validators';
-export interface IAttributes {
-    [s: string]: any;
-}
+export declare type ContraintOpts = any;
 export interface IConstraint {
     contains?: (any[] | object);
     cleanAttributes?: string[];
@@ -20,6 +18,7 @@ export interface IConstraint {
     required?: (boolean | object);
     type?: (string | object);
     url?: (boolean | object);
+    [s: string]: any;
 }
 export interface IRule {
     rule: string;
@@ -34,7 +33,7 @@ export interface IConstraintsList {
 export declare type ValidationResults = IValidationError[] | undefined;
 export interface IConstraints {
     constraints: IConstraintsList;
-    test(args: IAttributes, validators: IValidators): ValidationResults;
+    test(args: RequestArgs, validators: IValidators): ValidationResults;
 }
 export interface IRawConstraint {
     [param: string]: object;
@@ -44,6 +43,6 @@ export interface IRawConstraints {
 }
 export declare class Constraints implements IConstraints {
     constraints: IConstraintsList;
-    constructor(endpoint: ISyncanoEndpoint);
-    test(args: IAttributes, validators: IValidators): ValidationResults;
+    constructor(endpoint: RequestMetaMetadata);
+    test(args: RequestArgs, validators: IValidators): ValidationResults;
 }

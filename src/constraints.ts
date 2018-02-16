@@ -1,11 +1,9 @@
+import { RequestArgs, RequestMetaMetadata, RequestMetaMetadataParameters } from '@syncano/core';
 import {keys} from 'ts-transformer-keys';
-import { ISyncanoEndpoint, ISyncanoParameters } from './syncano_endpoint';
 import { IValidationError } from './validator';
 import {IValidators} from './validators';
 
-export interface IAttributes {
-  [s: string]: any;
-}
+export type ContraintOpts = any;
 export interface IConstraint {
   contains?: (any[]|object);
   cleanAttributes?: string[];
@@ -22,6 +20,7 @@ export interface IConstraint {
   required?: (boolean|object);
   type?: (string|object);
   url?: (boolean|object);
+  [s: string]: any;
 }
 export interface IRule {
   rule: string;
@@ -74,7 +73,7 @@ export interface IConstraintsList {
 export type ValidationResults = IValidationError[]|undefined;
 export interface IConstraints {
   constraints: IConstraintsList;
-  test(args: IAttributes, validators: IValidators): ValidationResults;
+  test(args: RequestArgs, validators: IValidators): ValidationResults;
 }
 
 export interface IRawConstraint {
@@ -86,14 +85,19 @@ export interface IRawConstraints {
 }
 export class Constraints implements IConstraints {
   public constraints: IConstraintsList;
-  constructor(endpoint: ISyncanoEndpoint) {
-    const parameters: ISyncanoParameters = endpoint.parameters || {};
+  constructor(endpoint: RequestMetaMetadata) {
+    const parameters: RequestMetaMetadataParameters = endpoint.parameters || {};
     this.constraints = {};
     for (const k of Object.keys(parameters)) {
       this.constraints[k] = new Constraint(parameters[k].constraints || {});
+      if (!this.constraints[k].type) {
+        if (parameters[k].type) {
+          this.constraints[k].type = parameters[k].type;
+        }
+      }
     }
   }
-  public test(args: IAttributes, validators: IValidators): ValidationResults {
+  public test(args: RequestArgs, validators: IValidators): ValidationResults {
     const results: IValidationError[] = [];
     for (const param of Object.keys(this.constraints)) {
       const constraint = this.constraints[param];

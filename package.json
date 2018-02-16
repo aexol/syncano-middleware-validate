@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@types/jest": "^22.1.2",
+    "@types/lodash.get": "^4.4.3",
     "@types/node": "^4.0.36",
     "@types/node-fetch": "^1.6.7",
     "jest": "^22.3.0",
@@ -23,6 +24,7 @@
   },
   "dependencies": {
     "@types/sprintf-js": "^1.1.0",
+    "lodash.get": "^4.4.2",
     "sprintf-js": "^1.1.1",
     "syncano-middleware": "https://github.com/aexol/syncano-middleware.git",
     "ts-transformer-keys": "^0.3.1",

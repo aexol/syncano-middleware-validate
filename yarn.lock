@@ -31,6 +31,16 @@
   version "22.1.2"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-22.1.2.tgz#813a79ec98221633845627636dbc606f31220dbc"
 
+"@types/lodash.get@^4.4.3":
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/@types/lodash.get/-/lodash.get-4.4.3.tgz#ac823d175a9593c10555b5097b72281effd544b5"
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash@*":
+  version "4.14.103"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.103.tgz#56ac640f029f67655f0721f479f1faa982bd8122"
+
 "@types/node-fetch@^1.6.7":
   version "1.6.7"
   resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-1.6.7.tgz#521078e8f0c69a158e5022005aca92d2620f6d57"
@@ -150,8 +160,8 @@ are-we-there-yet@~1.1.2:
     readable-stream "^2.0.6"
 
 argparse@^1.0.7:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/argparse/-/argparse-1.0.9.tgz#73d83bc263f86e97f8cc4f6bae1b0e90a7d22c86"
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/argparse/-/argparse-1.0.10.tgz#bcd6791ea5ae09725e17e5ad988134cd40b3d911"
   dependencies:
     sprintf-js "~1.0.2"
 
@@ -1127,8 +1137,8 @@ hoek@2.x.x:
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-2.16.3.tgz#20bb7403d3cea398e91dc4710a8ff1b8274a25ed"
 
 hoek@4.x.x:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.2.0.tgz#72d9d0754f7fe25ca2d01ad8f8f9a9449a89526d"
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.2.1.tgz#9634502aa12c445dd5a7c5734b572bb8738aacbb"
 
 home-or-tmp@^2.0.0:
   version "2.0.0"
@@ -1844,8 +1854,8 @@ lru-cache@^4.0.1:
     yallist "^2.1.2"
 
 make-error@^1.1.1:
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/make-error/-/make-error-1.3.3.tgz#a97ae14ffd98b05f543e83ddc395e1b2b6e4cc6a"
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/make-error/-/make-error-1.3.4.tgz#19978ed575f9e9545d2ff8c13e33b5d18a67d535"
 
 makeerror@1.0.x:
   version "1.0.11"
@@ -2082,8 +2092,8 @@ os-tmpdir@^1.0.0, os-tmpdir@^1.0.1:
   resolved "https://registry.yarnpkg.com/os-tmpdir/-/os-tmpdir-1.0.2.tgz#bbe67406c79aa85c5cfec766fe5734555dfa1274"
 
 osenv@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/osenv/-/osenv-0.1.4.tgz#42fe6d5953df06c8064be6f176c3d05aaaa34644"
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/osenv/-/osenv-0.1.5.tgz#85cdfafaeb28e8677f416e287592b5f3f49ea410"
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
@@ -2667,7 +2677,7 @@ symbol-tree@^3.2.2:
 
 "syncano-middleware@https://github.com/aexol/syncano-middleware.git":
   version "0.0.1"
-  resolved "https://github.com/aexol/syncano-middleware.git#1c54cf805cb8de8d56877f542bd7366377a03369"
+  resolved "https://github.com/aexol/syncano-middleware.git#648743b32713fe22c16b4d6a481313259f73bef9"
   dependencies:
     "@syncano/core" "^0.8.0"
 
@@ -2817,8 +2827,8 @@ type-check@~0.3.2:
     prelude-ls "~1.1.2"
 
 typescript@^2.7.1:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.7.1.tgz#bb3682c2c791ac90e7c6210b26478a8da085c359"
+  version "2.7.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.7.2.tgz#2d615a1ef4aee4f574425cdff7026edf81919836"
 
 uglify-js@^2.6:
   version "2.8.29"

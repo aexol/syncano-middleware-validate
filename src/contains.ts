@@ -13,7 +13,7 @@ export class Contains extends Validator {
   }
 
   public test(value: any): boolean {
-    return validateJs.contains(this.opts.collection, value);
+    return !validateJs.isDefined(value) || validateJs.contains(this.opts.collection, value);
   }
 }
 

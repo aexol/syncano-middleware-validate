@@ -1,6 +1,6 @@
-import { ISyncanoContext } from 'syncano-middleware';
+import { Context } from '@syncano/core';
 import { IConstraints } from './constraints';
 export declare class MetaParser {
     private constraints?;
-    getMeta(ctx: ISyncanoContext): Promise<IConstraints>;
+    getMeta(ctx: Context): Promise<IConstraints>;
 }
