@@ -1,5 +1,5 @@
 import Server, { Context } from '@syncano/core';
-import {HandlerFn, IResponse, IResponsePayload, IResponseStatus} from 'syncano-middleware';
+import {HandlerFn, IResponse, IResponsePayload, IResponseStatus, NamedResponse} from 'syncano-middleware';
 import { IConstraints } from './constraints';
 import { MetaParser } from './meta_parser';
 import validators from './validators';
@@ -8,7 +8,7 @@ export class ValidatePlugin {
   constructor(private handler: HandlerFn,
               private endpointMeta: IConstraints) {}
   public async handle(ctx: Context,
-                      syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus> {
+                      syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> {
     const validationResult = this.endpointMeta.test(ctx.args || {}, validators);
     if (validationResult) {
       throw validationResult;
@@ -25,6 +25,6 @@ async function makeValidator( ctx: Context,
 }
 
 export default (handler: HandlerFn): HandlerFn =>
-  (ctx: Context, syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus> =>
+  (ctx: Context, syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> =>
       makeValidator(ctx, handler)
       .then(validator => validator.handle(ctx, syncano));

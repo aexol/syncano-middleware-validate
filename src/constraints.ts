@@ -1,5 +1,4 @@
 import { RequestArgs, RequestMetaMetadata, RequestMetaMetadataParameters } from '@syncano/core';
-import {keys} from 'ts-transformer-keys';
 import { IValidationError } from './validator';
 import {IValidators} from './validators';
 
@@ -29,7 +28,7 @@ export interface IRule {
 export interface IRules {
   rules(): IRule[];
 }
-class ConstraintSchema {
+class ConstraintSchema implements IConstraint {
   public contains?: (any[]|object);
   public cleanAttributes?: string[];
   public datetime?: object;
@@ -45,20 +44,17 @@ class ConstraintSchema {
   public required?: (boolean|object);
   public type?: (string|object);
   public url?: (boolean|object);
+  [s: string]: any;
 }
 
-class Constraint extends ConstraintSchema implements IRules, IConstraint {
-  [r: string]: any
-  constructor(args: ConstraintSchema = {}) {
-    super();
-    Object.assign(this, args);
-  }
+class Constraint implements IRules {
+  constructor(private schema: ConstraintSchema = {}) {}
   public rules(): IRule[] {
     const okeys: IRule[] = [] ;
-    for (const k of keys<IConstraint>()) {
-      if (k in this) {
+    for (const k of Object.keys(this.schema)) {
+      if (k in this.schema) {
         okeys.push({
-          options: this[k],
+          options: this.schema[k],
           rule: k,
         });
       }
