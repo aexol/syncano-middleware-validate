@@ -2677,7 +2677,7 @@ symbol-tree@^3.2.2:
 
 "syncano-middleware@https://github.com/aexol/syncano-middleware.git":
   version "0.0.1"
-  resolved "https://github.com/aexol/syncano-middleware.git#b07692f3991159382f4e5d4c0bc96d0ccd204b1d"
+  resolved "https://github.com/aexol/syncano-middleware.git#b36476b4f00fe7e7890f150c3bb0973e54cb6601"
   dependencies:
     "@syncano/core" "^0.8.0"
 
