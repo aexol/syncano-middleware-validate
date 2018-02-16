@@ -2,14 +2,14 @@ import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
 
 export class Match extends Validator {
-  constructor(opts: any) {
+  constructor(opts: any, key: string, attribtues: object) {
     if (typeof opts === 'string') {
       opts = {pattern: opts};
     }
     if (!('message' in opts)) {
-      opts.message = '$(value)s must match $(pattern)s';
+      opts.message = '%(key)s must match %(pattern)s';
     }
-    super('match', opts);
+    super('match', opts, key, attribtues);
   }
 
   public test(value: any): boolean {
@@ -23,5 +23,5 @@ export class Match extends Validator {
   }
 }
 
-export default (value: any, opts: any): ValidationResult =>
-  (new Match(opts).validate(value));
+export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+  (new Match(opts, key, attributes).validate(value));

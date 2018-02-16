@@ -10,8 +10,10 @@ export interface IValidator {
 export declare abstract class Validator {
     validatorName: string;
     opts: any;
+    key: string;
+    attributes: object;
     private msg;
-    constructor(validatorName: string, opts: any);
+    constructor(validatorName: string, opts: any, key: string, attributes: object);
     message(value: any): string;
     validate(value: any): ValidationResult;
     abstract test(value: any): boolean;

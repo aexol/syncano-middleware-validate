@@ -13,14 +13,14 @@ interface ITypeTest {
 }
 
 export class Type extends Validator {
-  constructor(opts: any) {
+  constructor(opts: any, key: string, attributes: object) {
     if (typeof opts === 'string') {
       opts = {type: opts};
     }
     if (!('message' in opts)) {
-      opts.message = '$(value)s must be $(type)s';
+      opts.message = '%(key)s must be %(type)s';
     }
-    super('type', opts);
+    super('type', opts, key, attributes);
   }
 
   public test(value: any): boolean {
@@ -40,5 +40,5 @@ export class Type extends Validator {
   }
 }
 
-export default (value: any, opts: any): ValidationResult =>
-  (new Type(opts).validate(value));
+export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+  (new Type(opts, key, attributes).validate(value));

@@ -2,18 +2,18 @@ import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
 
 export class Defined extends Validator {
-  constructor(opts: any) {
+  constructor(opts: any, key: string, attributes: object) {
     if (opts === true || opts === false) {
       opts = {isDefined: opts};
     }
     if (!('message' in opts)) {
       if (opts.isDefined) {
-        opts.message = 'must be defined';
+        opts.message = '%(key) must be defined';
       } else {
-        opts.message = 'cannot be defined';
+        opts.message = '%(key) cannot be defined';
       }
     }
-    super('isDefined', opts);
+    super('isDefined', opts, key, attributes);
   }
 
   public test(value: any): boolean {
@@ -21,5 +21,5 @@ export class Defined extends Validator {
   }
 }
 
-export default (value: any, opts: any): ValidationResult =>
-  (new Defined(opts).validate(value));
+export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+  (new Defined(opts, key, attributes).validate(value));

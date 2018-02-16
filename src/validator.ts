@@ -12,12 +12,21 @@ export interface IValidator {
 
 export abstract class Validator {
   private msg: string;
-  constructor(public validatorName: string, public opts: any) {
+  constructor(public validatorName: string,
+              public opts: any,
+              public key: string,
+              public attributes: object) {
     this.msg = opts.message ?
-    opts.message : 'bad value $(value)s';
+    opts.message : 'bad value %(value)s';
   }
   public message(value: any): string {
-    return sprintf(this.msg, {validatorName: this.validatorName,
+    console.log(this.msg);
+    console.log(this.validatorName);
+    console.log(value);
+    return sprintf(this.msg, {
+      attributes: this.attributes,
+      key: this.key,
+      validatorName: this.validatorName,
       value,
       ...this.opts});
   }

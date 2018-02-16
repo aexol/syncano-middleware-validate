@@ -1,17 +1,23 @@
 import Server, { Context } from '@syncano/core';
-import {HandlerFn, IResponse, IResponsePayload, IResponseStatus, NamedResponse} from 'syncano-middleware';
-import { IConstraints } from './constraints';
+import {HandlerFn,
+  IResponse,
+  IResponsePayload,
+  IResponseStatus,
+  NamedResponse,
+  response,
+} from 'syncano-middleware';
+import { Constraints } from './constraints';
 import { MetaParser } from './meta_parser';
 import validators from './validators';
 
 export class ValidatePlugin {
   constructor(private handler: HandlerFn,
-              private endpointMeta: IConstraints) {}
+              private endpointMeta: Constraints) {}
   public async handle(ctx: Context,
                       syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> {
-    const validationResult = this.endpointMeta.test(ctx.args || {}, validators);
+    const validationResult = this.endpointMeta.test(ctx.args || {});
     if (validationResult) {
-      throw validationResult;
+      return response(validationResult, 400);
     }
     return this.handler(ctx, syncano);
   }
