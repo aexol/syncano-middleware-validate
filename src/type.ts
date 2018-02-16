@@ -2,6 +2,7 @@ import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
 
 interface ITypeTest {
+  any: (value: any) => boolean;
   array: (value: any) => boolean;
   boolean: (value: any) => boolean;
   datetime: (value: any) => boolean;
@@ -25,6 +26,7 @@ export class Type extends Validator {
 
   public test(value: any): boolean {
     const f: ITypeTest = {
+      any: () => true,
       array: validateJs.isArray,
       boolean: validateJs.isBoolean,
       datetime: validateJs.isDate,

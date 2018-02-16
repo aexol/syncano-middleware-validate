@@ -20,9 +20,6 @@ export abstract class Validator {
     opts.message : 'bad value %(value)s';
   }
   public message(value: any): string {
-    console.log(this.msg);
-    console.log(this.validatorName);
-    console.log(value);
     return sprintf(this.msg, {
       attributes: this.attributes,
       key: this.key,
