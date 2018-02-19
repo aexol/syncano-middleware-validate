@@ -1,6 +1,11 @@
 import { RequestArgs, RequestMetaMetadata, RequestMetaMetadataParameters } from '@syncano/core';
+import merge from 'lodash.merge';
 import { IValidationError } from './validator';
 import validate from './validators';
+
+const allOf = 'allOf';
+const anyOf = 'anyOf';
+const oneOf = 'oneOf';
 
 export interface IConstraint {
   contains?: (any[]|object);
@@ -29,23 +34,45 @@ export class Constraints {
   private rules?: Rules;
   constructor(endpoint: RequestMetaMetadata) {
     const parameters: RequestMetaMetadataParameters = endpoint.parameters || {};
-    this.rules = {};
+    const rules: Rules = endpoint.constraints || {};
     for (const k of Object.keys(parameters)) {
-      if (!this.rules[k]) {
-        this.rules[k] = {};
-      }
-      this.rules[k] = parameters[k].constraints as IConstraint || {};
-      if (!this.rules[k].type) {
+      if (!rules[k].type) {
         if (parameters[k].type) {
-          this.rules[k].type = parameters[k].type;
+          rules[k].type = parameters[k].type;
         }
       }
-      if (typeof this.rules[k].presence === 'undefined' ) {
+      if (typeof rules[k].presence === 'undefined' ) {
         if (typeof parameters[k].required !== 'undefined' ) {
-          this.rules[k].presence = parameters[k].required;
+          rules[k].presence = parameters[k].required;
         }
       }
+      rules[k] = merge(rules[k], parameters[k].constraints || {});
     }
+    // Check for anyOf object in constraints, skip if there exists parameter
+    // with that name.
+    if (anyOf in rules && !(anyOf in parameters)) {
+      for (const k of Object.keys(rules.anyOf)) {
+        rules[k] = merge(rules[k], {k: {anyOf: rules.anyOf}});
+      }
+      delete rules.anyOf;
+    }
+    // Check for anyOf object in constraints, skip if there exists parameter
+    // with that name.
+    if (allOf in rules && !(allOf in parameters)) {
+      for (const k of Object.keys(rules.allOf)) {
+        rules[k] = merge(rules[k], {k: {allOf: rules.allOf}});
+      }
+      delete rules.anyOf;
+    }
+    // Check for oneOf object in constraints, skip if there exists parameter
+    // with that name.
+    if (oneOf in rules && !(oneOf in parameters)) {
+      for (const k of Object.keys(rules.oneOf)) {
+        rules[k] = merge(rules[k], {k: {oneOf: rules.oneOf}});
+      }
+      delete rules.oneOf;
+    }
+    this.rules = rules;
   }
   public test(args: RequestArgs): any {
     return validate(args, this.rules);

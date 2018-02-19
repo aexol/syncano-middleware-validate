@@ -1,6 +1,9 @@
 export interface IValidationError {
     [s: string]: string;
 }
+export interface IAttribs {
+    [s: string]: any;
+}
 export declare type ValidationResult = (IValidationError | undefined);
 export interface IValidator {
     message(value: any): string;
@@ -11,7 +14,7 @@ export declare abstract class Validator {
     validatorName: string;
     opts: any;
     key: string;
-    attributes: object;
+    protected attributes: IAttribs;
     private msg;
     constructor(validatorName: string, opts: any, key: string, attributes: object);
     message(value: any): string;

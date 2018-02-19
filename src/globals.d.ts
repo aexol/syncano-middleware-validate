@@ -21,8 +21,8 @@ declare module '@syncano/core' {
   export interface RequestYAMLParameter {
     type?: string
     description?: string
-    constraints?: object
     required?: boolean
+    [s: string]: (boolean|string|undefined);
   }
 
   export interface RequestMetaMetadataParameters  {
@@ -31,6 +31,7 @@ declare module '@syncano/core' {
   export interface RequestMetaMetadata  {
     description?: string;
     parameters?: RequestMetaMetadataParameters;
+    [s: string]: any;
   }
 
   export interface RequestMeta  {

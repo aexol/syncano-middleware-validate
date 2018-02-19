@@ -3,6 +3,11 @@ import {sprintf} from 'sprintf-js';
 export interface IValidationError {
   [s: string]: string;
 }
+
+export interface IAttribs {
+  [s: string]: any;
+}
+
 export type ValidationResult = (IValidationError|undefined);
 export interface IValidator {
   message(value: any): string;
@@ -11,11 +16,13 @@ export interface IValidator {
 }
 
 export abstract class Validator {
+  protected attributes: IAttribs;
   private msg: string;
   constructor(public validatorName: string,
               public opts: any,
               public key: string,
-              public attributes: object) {
+              attributes: object) {
+    this.attributes = attributes;
     this.msg = opts.message ?
     opts.message : 'bad value %(value)s';
   }
