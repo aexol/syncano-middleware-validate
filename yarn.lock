@@ -2683,9 +2683,10 @@ symbol-tree@^3.2.2:
 
 "syncano-middleware@https://github.com/aexol/syncano-middleware.git":
   version "0.0.1"
-  resolved "https://github.com/aexol/syncano-middleware.git#255ee78f19c70b0e549785b09e5bc615caf23898"
+  resolved "https://github.com/aexol/syncano-middleware.git#0f7d3eb15d9036a576138a75333734bdb37884ac"
   dependencies:
     "@syncano/core" "^0.8.0"
+    lodash.get "^4.4.2"
 
 tar-pack@^3.4.0:
   version "3.4.1"

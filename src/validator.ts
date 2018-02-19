@@ -23,8 +23,7 @@ export abstract class Validator {
               public key: string,
               attributes: object) {
     this.attributes = attributes;
-    this.msg = opts.message ?
-    opts.message : 'bad value %(value)s';
+    this.msg = opts.message || 'bad value %(value)s';
   }
   public message(value: any): string {
     return sprintf(this.msg, {

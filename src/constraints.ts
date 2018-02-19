@@ -34,25 +34,28 @@ export class Constraints {
   private rules?: Rules;
   constructor(endpoint: RequestMetaMetadata) {
     const parameters: RequestMetaMetadataParameters = endpoint.parameters || {};
-    const rules: Rules = endpoint.constraints || {};
+    let rules: Rules = endpoint.constraints || {};
     for (const k of Object.keys(parameters)) {
+      if (!rules[k]) {
+        rules[k] = {};
+      }
       if (!rules[k].type) {
         if (parameters[k].type) {
-          rules[k].type = parameters[k].type;
+          rules = merge(rules, {[k]: {type: parameters[k].type}});
         }
       }
       if (typeof rules[k].presence === 'undefined' ) {
         if (typeof parameters[k].required !== 'undefined' ) {
-          rules[k].presence = parameters[k].required;
+          rules = merge(rules, {[k]: {presence: parameters[k].required}});
         }
       }
-      rules[k] = merge(rules[k], parameters[k].constraints || {});
+      rules = merge(rules, {[k]: parameters[k].constraints || {}});
     }
     // Check for anyOf object in constraints, skip if there exists parameter
     // with that name.
     if (anyOf in rules && !(anyOf in parameters)) {
       for (const k of Object.keys(rules.anyOf)) {
-        rules[k] = merge(rules[k], {k: {anyOf: rules.anyOf}});
+        rules = merge(rules, {[k]: {anyOf: rules.anyOf}});
       }
       delete rules.anyOf;
     }
@@ -60,15 +63,15 @@ export class Constraints {
     // with that name.
     if (allOf in rules && !(allOf in parameters)) {
       for (const k of Object.keys(rules.allOf)) {
-        rules[k] = merge(rules[k], {k: {allOf: rules.allOf}});
+        rules = merge(rules, {[k]: {allOf: rules.allOf}});
       }
-      delete rules.anyOf;
+      delete rules.allOf;
     }
     // Check for oneOf object in constraints, skip if there exists parameter
     // with that name.
     if (oneOf in rules && !(oneOf in parameters)) {
       for (const k of Object.keys(rules.oneOf)) {
-        rules[k] = merge(rules[k], {k: {oneOf: rules.oneOf}});
+        rules = merge(rules, {[k]: {oneOf: rules.oneOf}});
       }
       delete rules.oneOf;
     }

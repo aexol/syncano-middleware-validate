@@ -8,7 +8,6 @@ import {HandlerFn,
 } from 'syncano-middleware';
 import { Constraints } from './constraints';
 import { MetaParser } from './meta_parser';
-import validators from './validators';
 
 export class ValidatePlugin {
   constructor(private handler: HandlerFn,
@@ -34,3 +33,6 @@ export default (handler: HandlerFn): HandlerFn =>
   (ctx: Context, syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> =>
       makeValidator(ctx, handler)
       .then(validator => validator.handle(ctx, syncano));
+
+import _validators from './validators';
+export const validators = _validators;

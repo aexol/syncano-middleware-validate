@@ -4,19 +4,20 @@ import {IValidationError, ValidationResult, Validator} from './validator';
 export class OneOf extends Validator {
   private oneOf: string[];
   constructor(opts: any, key: string, attributes: object) {
-    if (typeof opts !== 'object') {
-      opts.parameters = opts;
+    if (typeof opts !== 'object' || Array.isArray(opts)) {
+      opts = {parameters: opts};
     }
     if (!('message' in opts)) {
       opts.message = 'exactly one of %(parameters)s is required';
     }
     super('oneOf', opts, key, attributes);
     this.oneOf = [];
-    if (Array.isArray(opts.parameters)) {
-      const aOpts: any[] = opts;
-      for (const i in opts) {
-        if (typeof opts[i] === 'string') {
-          this.oneOf.push(opts[i]);
+    const params = opts.parameters;
+    if (Array.isArray(params)) {
+      const aOpts: any[] = params;
+      for (const i in params) {
+        if (typeof params[i] === 'string') {
+          this.oneOf.push(params[i]);
         }
       }
     }

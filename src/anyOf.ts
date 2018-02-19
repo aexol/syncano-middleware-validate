@@ -4,19 +4,20 @@ import {IValidationError, ValidationResult, Validator} from './validator';
 export class AnyOf extends Validator {
   private anyOf: string[];
   constructor(opts: any, key: string, attributes: object) {
-    if (typeof opts !== 'object') {
-      opts.parameters = opts;
+    if (typeof opts !== 'object' || Array.isArray(opts)) {
+      opts = {parameters: opts};
     }
     if (!('message' in opts)) {
       opts.message = 'atleast one of %(parameters)s is required';
     }
     super('anyOf', opts, key, attributes);
     this.anyOf = [];
-    if (Array.isArray(opts.parameters)) {
-      const aOpts: any[] = opts;
-      for (const i in opts) {
-        if (typeof opts[i] === 'string') {
-          this.anyOf.push(opts[i]);
+    const params = opts.parameters;
+    if (Array.isArray(params)) {
+      const aOpts: any[] = params;
+      for (const i in params) {
+        if (typeof params[i] === 'string') {
+          this.anyOf.push(params[i]);
         }
       }
     }
