@@ -27,6 +27,8 @@ export class Schema extends Validator {
       });
     }
     this.ajv = new Ajv({schemas});
+    require('ajv-merge-patch')(this.ajv);
+    require('ajv-keywords')(this.ajv);
   }
 
   public test(value: any, ctx?: Context): boolean {
