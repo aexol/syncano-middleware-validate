@@ -22,11 +22,18 @@ export class ValidatePlugin {
   }
 }
 
+const metaParser = new MetaParser();
 async function makeValidator( ctx: Context,
                               handler: HandlerFn): Promise<ValidatePlugin> {
-  return new MetaParser()
+  return metaParser
     .getMeta(ctx)
     .then(endpointMeta => new ValidatePlugin(handler, endpointMeta));
+}
+
+const namedMetaParser = new NamedMetaParser();
+async function makeNamedValidator( ctx: Context, endpointName: string ):
+                              Promise<Constraints> {
+  return namedMetaParser.getMeta(ctx, endpointName);
 }
 
 export default (handler: HandlerFn): HandlerFn =>
@@ -34,6 +41,16 @@ export default (handler: HandlerFn): HandlerFn =>
       makeValidator(ctx, handler)
       .then(validator => validator.handle(ctx, syncano));
 
+export async function validateByEndpointName( args: any,
+                                              ctx: Context,
+                                              endpointName: string):
+                                              Promise<ValidationResult> {
+  return makeNamedValidator(ctx, endpointName)
+          .then(constraints => constraints.test(args));
+}
+
+import { NamedMetaParser } from './socket_info_parser';
+import { ValidationResult } from './validate';
 import _validators from './validators';
 export const validators = _validators;
 export { ValidationResult } from './validator';

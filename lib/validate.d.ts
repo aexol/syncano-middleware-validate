@@ -9,5 +9,7 @@ export declare class ValidatePlugin {
 }
 declare const _default: (handler: HandlerFn) => HandlerFn;
 export default _default;
+export declare function validateByEndpointName(args: any, ctx: Context, endpointName: string): Promise<ValidationResult>;
+import { ValidationResult } from './validate';
 export declare const validators: any;
 export { ValidationResult } from './validator';

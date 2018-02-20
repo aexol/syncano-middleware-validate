@@ -1,4 +1,4 @@
-import { Context, RequestMetaMetadata, RequestMetaRequest } from '@syncano/core';
+import Server, { Context, RequestMetaMetadata, RequestMetaRequest } from '@syncano/core';
 import get from 'lodash.get';
 import { Constraints } from './constraints';
 
