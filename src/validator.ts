@@ -1,3 +1,4 @@
+import { Context } from '@syncano/core';
 import {ErrorObject} from 'ajv';
 import {sprintf} from 'sprintf-js';
 
@@ -12,7 +13,7 @@ export interface IAttribs {
 export type ValidationResult = (IValidationError|undefined);
 export interface IValidator {
   message(value: any): (string|ErrorObject[]);
-  test(value: any): boolean;
+  test(value: any, ctx?: Context): boolean;
   validate(value: any): ValidationResult;
 }
 
@@ -37,11 +38,11 @@ export abstract class Validator {
       value,
       ...this.opts});
   }
-  public validate(value: any): ValidationResult {
-    if (this.test(value)) {
+  public validate(value: any, ctx?: Context): ValidationResult {
+    if (this.test(value, ctx)) {
       return undefined;
     }
     return {[this.validatorName]: this.message(value)};
   }
-  public abstract test(value: any): boolean;
+  public abstract test(value: any, ctx?: Context): boolean;
 }

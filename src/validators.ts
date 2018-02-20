@@ -6,6 +6,7 @@ import defined from './defined';
 import empty from './empty';
 import oneOf from './oneOf';
 import match from './pattern';
+import schema from './schema';
 import type from './type';
 import {ValidationResult} from './validator';
 
@@ -16,6 +17,7 @@ validateJs.validators.defined = defined;
 validateJs.validators.empty = empty;
 validateJs.validators.match = match;
 validateJs.validators.oneOf = oneOf;
+validateJs.validators.schema = schema;
 validateJs.validators.type = type;
 
 const validateFn: any = (args: any, constraints: any): any => {

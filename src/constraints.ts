@@ -21,6 +21,7 @@ export interface IConstraint {
   numericality?: (boolean|object);
   presence?: (boolean|object);
   required?: (boolean|object);
+  schema?: object;
   type?: (string|object);
   url?: (boolean|object);
   [s: string]: any;
@@ -32,8 +33,16 @@ class Rules {
 
 export class Constraints {
   private rules?: Rules;
+  private paramsSchema?: boolean;
   constructor(endpoint: RequestMetaMetadata) {
     const parameters: RequestMetaMetadataParameters = endpoint.parameters || {};
+    if ('schema' in parameters) {
+      this.rules = {
+        parameters: {schema: parameters.schema},
+      };
+      this.paramsSchema = true;
+      return;
+    }
     let rules: Rules = endpoint.constraints || {};
     for (const k of Object.keys(parameters)) {
       if (!rules[k]) {
@@ -78,6 +87,9 @@ export class Constraints {
     this.rules = rules;
   }
   public test(args: RequestArgs): any {
+    if (this.paramsSchema) {
+      return validate({parameters: args}, this.rules);
+    }
     return validate(args, this.rules);
   }
 }
