@@ -1,4 +1,4 @@
-import { RequestArgs, RequestMetaMetadata, RequestMetaMetadataParameters } from '@syncano/core';
+import { Context, RequestArgs, RequestMetaMetadata, RequestMetaMetadataParameters } from '@syncano/core';
 import merge from 'lodash.merge';
 import { IValidationError } from './validator';
 import validate from './validators';
@@ -48,6 +48,9 @@ export class Constraints {
       if (!rules[k]) {
         rules[k] = {};
       }
+      if ('schema' in parameters[k]) {
+          rules = merge(rules, {[k]: {schema: parameters[k].schema}});
+      }
       if (!rules[k].type) {
         if (parameters[k].type) {
           rules = merge(rules, {[k]: {type: parameters[k].type}});
@@ -86,10 +89,10 @@ export class Constraints {
     }
     this.rules = rules;
   }
-  public test(args: RequestArgs): any {
+  public test(args: RequestArgs, ctx?: Context): any {
     if (this.paramsSchema) {
-      return validate({parameters: args}, this.rules);
+      return validate({parameters: args}, this.rules, {ctx});
     }
-    return validate(args, this.rules);
+    return validate(args, this.rules, {ctx});
   }
 }

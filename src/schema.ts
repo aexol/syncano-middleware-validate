@@ -4,22 +4,45 @@ import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
 
 export class Schema extends Validator {
-  constructor(opts: any, key: string, attributes: object) {
-    super('schema', opts, key, attributes);
+  private ajv: Ajv.Ajv;
+  constructor(opts: any,
+              key: string,
+              attributes: object,
+              globalOptions?: object) {
+    if (!('schema' in opts)) {
+      opts = {schema: opts};
+    }
+    super('schema', opts, key, attributes, globalOptions);
+    const schemas: any[] = [
+      {
+        ...this.opts.schema,
+        $id: 'http://local/schemas/parameter',
+      },
+    ];
+    const ctx = (this.globalOptions || {}).ctx;
+    if (ctx) {
+      schemas.push({
+        ...(ctx.meta || {}).metadata,
+        $id: 'http://local/schemas/endpoint',
+      });
+    }
+    this.ajv = new Ajv({schemas});
   }
 
   public test(value: any, ctx?: Context): boolean {
-    const ajv = new Ajv();
-    if (ctx) {
-      ajv.addSchema({...ctx, $id: 'http://local/socket.json'});
+    if (!validateJs.isDefined(value)) {
+      return true;
     }
-    const validate = ajv.compile(this.opts.schema);
+    const validate = this.ajv.getSchema('http://local/schemas/parameter');
     if (!validate(value)) {
-      this.msg = validate.errors || 'does not match schema';
+      this.msg =  this.opts.message ||
+                  validate.errors ||
+                  'does not match schema';
+      return false;
     }
     return true;
   }
 }
 
-export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
-  (new Schema(opts, key, attributes).validate(value));
+export default (value: any, opts: any, key: string, attributes: object, globalOptions?: object): ValidationResult =>
+  (new Schema(opts, key, attributes, globalOptions).validate(value));

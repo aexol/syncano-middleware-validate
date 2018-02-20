@@ -52,11 +52,17 @@ interface ISocketMetaParser {
   [s: string]: MetaParser;
 }
 
+export interface IConstraintsWithContext {
+  constraints: Constraints;
+  context: Context;
+}
+
 export class NamedMetaParser {
   private socketMetas?: ISocketMetas;
   private socketParsers?: ISocketMetaParser;
   public async getMeta( ctx: Context,
-                        endpointName: string): Promise<Constraints> {
+                        endpointName: string):
+                        Promise<IConstraintsWithContext> {
     if (!this.socketParsers) {
       this.socketParsers = {};
     }
@@ -65,7 +71,9 @@ export class NamedMetaParser {
       parsers[endpointName] = new MetaParser();
     }
     return this.getContext(ctx, endpointName)
-            .then(eCtx => parsers[endpointName].getMeta(eCtx));
+            .then(eCtx => parsers[endpointName].getMeta(eCtx)
+                          .then(constraints => ({constraints, context: eCtx})),
+            );
   }
   public async getContext(ctx: Context,
                           endpointName: string): Promise<Context> {

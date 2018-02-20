@@ -8,7 +8,7 @@ import {HandlerFn,
 } from 'syncano-middleware';
 import { Constraints } from './constraints';
 import { MetaParser } from './meta_parser';
-import { NamedMetaParser } from './socket_info_parser';
+import { IConstraintsWithContext, NamedMetaParser } from './socket_info_parser';
 import { ValidationResult } from './validate';
 
 export class ValidatePlugin {
@@ -16,7 +16,7 @@ export class ValidatePlugin {
               private endpointMeta: Constraints) {}
   public async handle(ctx: Context,
                       syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> {
-    const validationResult = this.endpointMeta.test(ctx.args || {});
+    const validationResult = this.endpointMeta.test(ctx.args || {}, ctx);
     if (validationResult) {
       return response(validationResult, 400);
     }
@@ -34,7 +34,7 @@ async function makeValidator( ctx: Context,
 
 const namedMetaParser = new NamedMetaParser();
 async function makeNamedValidator( ctx: Context, endpointName: string ):
-                              Promise<Constraints> {
+                              Promise<IConstraintsWithContext> {
   return namedMetaParser.getMeta(ctx, endpointName);
 }
 
@@ -48,7 +48,7 @@ export async function validateByEndpointName( args: any,
                                               endpointName: string):
                                               Promise<ValidationResult> {
   return makeNamedValidator(ctx, endpointName)
-      .then(constraints => constraints.test(args));
+      .then(v => v.constraints.test(args, v.context));
 }
 
 export { validators } from './validators';

@@ -10,10 +10,14 @@ export interface IAttribs {
   [s: string]: any;
 }
 
+export interface IOptions {
+  [s: string]: any;
+}
+
 export type ValidationResult = (IValidationError|undefined);
 export interface IValidator {
   message(value: any): (string|ErrorObject[]);
-  test(value: any, ctx?: Context): boolean;
+  test(value: any): boolean;
   validate(value: any): ValidationResult;
 }
 
@@ -23,7 +27,8 @@ export abstract class Validator {
   constructor(public validatorName: string,
               public opts: any,
               public key: string,
-              attributes: object) {
+              attributes: object,
+              public globalOptions?: IOptions) {
     this.attributes = attributes;
     this.msg = opts.message || 'bad value %(value)s';
   }
@@ -38,8 +43,8 @@ export abstract class Validator {
       value,
       ...this.opts});
   }
-  public validate(value: any, ctx?: Context): ValidationResult {
-    if (this.test(value, ctx)) {
+  public validate(value: any): ValidationResult {
+    if (this.test(value, (this.globalOptions || {}).ctx )) {
       return undefined;
     }
     return {[this.validatorName]: this.message(value)};
