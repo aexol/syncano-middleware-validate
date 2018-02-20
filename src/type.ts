@@ -1,3 +1,4 @@
+import isEqual from 'lodash.isequal';
 import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
 
@@ -18,6 +19,9 @@ export class Type extends Validator {
     if (typeof opts === 'string') {
       opts = {type: opts};
     }
+    if ('enum' in opts) {
+      opts.type = 'enum';
+    }
     if (!('message' in opts)) {
       opts.message = '%(key)s must be %(type)s';
     }
@@ -30,6 +34,14 @@ export class Type extends Validator {
       array: validateJs.isArray,
       boolean: validateJs.isBoolean,
       datetime: validateJs.isDate,
+      enum: () => {
+        for (const e in this.opts.enum) {
+          if (isEqual(value, this.opts.enum[e])) {
+            return true;
+          }
+        }
+        return false;
+      },
       integer: validateJs.isInteger,
       number: validateJs.isNumber,
       object: validateJs.isObject,

@@ -27,9 +27,9 @@ class SocketMeta {
       return this.contexts[scriptName];
     }
     const syncano = new Server(ctx);
-    return syncano.socket.get(socketName)
-          .then(sMeta => this.parseSocketMeta(sMeta))
-          .then(contexts => contexts[endpointName]);
+    return syncano.endpoint.get(socketName)
+    .then((sMeta: any) => this.parseSocketMeta(sMeta as ISocketInfo))
+    .then(contexts => contexts[endpointName]);
   }
   private parseSocketMeta(sMeta: ISocketInfo): ISocketContexts {
     this.contexts = {};

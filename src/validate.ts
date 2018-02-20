@@ -8,6 +8,8 @@ import {HandlerFn,
 } from 'syncano-middleware';
 import { Constraints } from './constraints';
 import { MetaParser } from './meta_parser';
+import { NamedMetaParser } from './socket_info_parser';
+import { ValidationResult } from './validate';
 
 export class ValidatePlugin {
   constructor(private handler: HandlerFn,
@@ -46,11 +48,8 @@ export async function validateByEndpointName( args: any,
                                               endpointName: string):
                                               Promise<ValidationResult> {
   return makeNamedValidator(ctx, endpointName)
-          .then(constraints => constraints.test(args));
+      .then(constraints => constraints.test(args));
 }
 
-import { NamedMetaParser } from './socket_info_parser';
-import { ValidationResult } from './validate';
-import _validators from './validators';
-export const validators = _validators;
+export { validators } from './validators';
 export { ValidationResult } from './validator';
