@@ -36,3 +36,4 @@ export default (handler: HandlerFn): HandlerFn =>
 
 import _validators from './validators';
 export const validators = _validators;
+export { ValidationResult } from './validator';
