@@ -10,3 +10,4 @@ export declare class ValidatePlugin {
 declare const _default: (handler: HandlerFn) => HandlerFn;
 export default _default;
 export declare const validators: any;
+export { ValidationResult } from './validator';
