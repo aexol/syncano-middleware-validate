@@ -1,7 +1,8 @@
+import {ErrorObject} from 'ajv';
 import {sprintf} from 'sprintf-js';
 
 export interface IValidationError {
-  [s: string]: string;
+  [s: string]: (string|ErrorObject[]);
 }
 
 export interface IAttribs {
@@ -10,14 +11,14 @@ export interface IAttribs {
 
 export type ValidationResult = (IValidationError|undefined);
 export interface IValidator {
-  message(value: any): string;
+  message(value: any): (string|ErrorObject[]);
   test(value: any): boolean;
   validate(value: any): ValidationResult;
 }
 
 export abstract class Validator {
+  public msg: (string|ErrorObject[]);
   protected attributes: IAttribs;
-  private msg: string;
   constructor(public validatorName: string,
               public opts: any,
               public key: string,
@@ -25,7 +26,10 @@ export abstract class Validator {
     this.attributes = attributes;
     this.msg = opts.message || 'bad value %(value)s';
   }
-  public message(value: any): string {
+  public message(value: any): (string|ErrorObject[]) {
+    if ( typeof this.msg !== 'string' ) {
+      return this.msg;
+    }
     return sprintf(this.msg, {
       attributes: this.attributes,
       key: this.key,

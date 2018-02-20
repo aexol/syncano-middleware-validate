@@ -1,3 +1,4 @@
+import Ajv from 'ajv';
 import isEqual from 'lodash.isequal';
 import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
@@ -5,11 +6,13 @@ import {IValidationError, ValidationResult, Validator} from './validator';
 interface ITypeTest {
   any: (value: any) => boolean;
   array: (value: any) => boolean;
+  enum: (value: any) => boolean;
   boolean: (value: any) => boolean;
   datetime: (value: any) => boolean;
   integer: (value: any) => boolean;
   number: (value: any) => boolean;
   object: (value: any) => boolean;
+  schema: (value: any) => boolean;
   string: (value: any) => boolean;
   [s: string]: ((value: any) => boolean);
 }
@@ -21,6 +24,9 @@ export class Type extends Validator {
     }
     if ('enum' in opts) {
       opts.type = 'enum';
+    }
+    if ('schema' in opts) {
+      opts.type = 'schema';
     }
     if (!('message' in opts)) {
       opts.message = '%(key)s must be %(type)s';
@@ -34,9 +40,9 @@ export class Type extends Validator {
       array: validateJs.isArray,
       boolean: validateJs.isBoolean,
       datetime: validateJs.isDate,
-      enum: () => {
+      enum: (v: any) => {
         for (const e in this.opts.enum) {
-          if (isEqual(value, this.opts.enum[e])) {
+          if (isEqual(v, this.opts.enum[e])) {
             return true;
           }
         }
@@ -45,6 +51,17 @@ export class Type extends Validator {
       integer: validateJs.isInteger,
       number: validateJs.isNumber,
       object: validateJs.isObject,
+      schema: (v: any) => {
+        const validate = new Ajv().compile(this.opts.schema);
+        if (!validate(v)) {
+          if (!('message' in this.opts)) {
+            // Hack message from schema validation
+            this.msg = validate.errors || 'schema validation failed';
+          }
+          return false;
+        }
+        return true;
+      },
       string: validateJs.isString,
     };
     if (!(this.opts.type in f)) {
