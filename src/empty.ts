@@ -16,10 +16,10 @@ export class Empty extends Validator {
     super('isEmpty', opts, key, attribtues);
   }
 
-  public test(value: any): boolean {
+  public async test(value: any): Promise<boolean> {
     return validateJs.isEmpty(value) === this.opts.isEmpty;
   }
 }
 
-export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+export default (value: any, opts: any, key: string, attributes: object): Promise<ValidationResult> =>
   (new Empty(opts, key, attributes).validate(value));

@@ -1,7 +1,7 @@
 import Server, { Context } from '@syncano/core';
 import { HandlerFn, IResponse, IResponsePayload, IResponseStatus, NamedResponse } from 'syncano-middleware';
 import { Constraints } from './constraints';
-import { ValidationResult } from './validate';
+import { ValidationResult } from './validator';
 export declare class ValidatePlugin {
     private handler;
     private endpointMeta;
@@ -10,6 +10,6 @@ export declare class ValidatePlugin {
 }
 declare const _default: (handler: HandlerFn) => HandlerFn;
 export default _default;
-export declare function validateByEndpointName(args: any, ctx: Context, endpointName: string): Promise<ValidationResult>;
+export declare function validateByEndpointName(args: any, ctx: Context, endpointName: string, syncano?: Server): Promise<ValidationResult>;
 export { validators } from './validators';
 export { ValidationResult } from './validator';

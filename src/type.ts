@@ -31,7 +31,7 @@ export class Type extends Validator {
     super('type', opts, key, attributes);
   }
 
-  public test(value: any, ctx?: Context): boolean {
+  public async test(value: any, ctx?: Context): Promise<boolean> {
     const f: ITypeTest = {
       any: () => true,
       array: validateJs.isArray,
@@ -57,5 +57,5 @@ export class Type extends Validator {
   }
 }
 
-export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+export default (value: any, opts: any, key: string, attributes: object): Promise<ValidationResult> =>
   (new Type(opts, key, attributes).validate(value));

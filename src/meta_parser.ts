@@ -1,4 +1,4 @@
-import Server, { Context, RequestMetaMetadata, RequestMetaRequest } from '@syncano/core';
+import { Context, RequestMetaMetadata, RequestMetaRequest } from '@syncano/core';
 import find from 'lodash.find';
 import get from 'lodash.get';
 import set from 'lodash.set';

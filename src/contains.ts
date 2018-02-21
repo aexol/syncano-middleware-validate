@@ -12,10 +12,10 @@ export class Contains extends Validator {
     super('contains', opts, key, attributes);
   }
 
-  public test(value: any): boolean {
+  public async test(value: any): Promise<boolean> {
     return !validateJs.isDefined(value) || validateJs.contains(this.opts.collection, value);
   }
 }
 
-export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+export default (value: any, opts: any, key: string, attributes: object): Promise<ValidationResult> =>
   (new Contains(opts, key, attributes).validate(value));

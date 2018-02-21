@@ -16,10 +16,10 @@ export class Defined extends Validator {
     super('isDefined', opts, key, attributes);
   }
 
-  public test(value: any): boolean {
+  public async test(value: any): Promise<boolean> {
     return validateJs.isDefined(value) === this.opts.isDefined;
   }
 }
 
-export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+export default (value: any, opts: any, key: string, attributes: object): Promise<ValidationResult> =>
   (new Defined(opts, key, attributes).validate(value));

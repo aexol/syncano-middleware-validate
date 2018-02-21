@@ -12,7 +12,7 @@ export class Match extends Validator {
     super('match', opts, key, attribtues);
   }
 
-  public test(value: any): boolean {
+  public async test(value: any): Promise<boolean> {
     if (!validateJs.isDefined(value)) {
       return true;
     }
@@ -23,5 +23,5 @@ export class Match extends Validator {
   }
 }
 
-export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+export default (value: any, opts: any, key: string, attributes: object): Promise<ValidationResult> =>
   (new Match(opts, key, attributes).validate(value));

@@ -4,12 +4,19 @@ export declare class Schema extends Validator {
     private ajv;
     private paramId;
     private name;
+    private socket;
+    private endpoint;
+    private parameter;
     private ctx?;
+    private syncano?;
     constructor(opts: any, key: string, attributes: object, globalOptions?: object);
-    test(value: any, ctx?: Context): boolean;
+    test(value: any, ctx?: Context): Promise<boolean>;
     private makeId(schemaId);
+    private fetchSocketJSON();
+    private makeSocketSchema();
+    private makeEndpointSchema();
     private makeSchema();
     private getSchema();
 }
-declare const _default: (value: any, opts: any, key: string, attributes: object, globalOptions?: object | undefined) => IValidationError | undefined;
+declare const _default: (value: any, opts: any, key: string, attributes: object, globalOptions?: object | undefined) => Promise<IValidationError | undefined>;
 export default _default;

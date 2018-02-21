@@ -1,4 +1,4 @@
-import { Context, RequestArgs, RequestMetaMetadata } from '@syncano/core';
+import Server, { Context, RequestArgs, RequestMetaMetadata } from '@syncano/core';
 export interface IConstraint {
     contains?: (any[] | object);
     cleanAttributes?: string[];
@@ -22,5 +22,5 @@ export declare class Constraints {
     private rules?;
     private paramsSchema?;
     constructor(endpoint: RequestMetaMetadata);
-    test(args: RequestArgs, ctx?: Context): any;
+    test(args: RequestArgs, ctx?: Context, syncano?: Server): Promise<any>;
 }

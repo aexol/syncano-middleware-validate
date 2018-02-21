@@ -1,4 +1,4 @@
-import { Context, RequestArgs, RequestMetaMetadata, RequestMetaMetadataParameters } from '@syncano/core';
+import Server, { Context, RequestArgs, RequestMetaMetadata, RequestMetaMetadataParameters } from '@syncano/core';
 import merge from 'lodash.merge';
 import { IValidationError } from './validator';
 import validate from './validators';
@@ -35,7 +35,8 @@ export class Constraints {
   private rules?: Rules;
   private paramsSchema?: boolean;
   constructor(endpoint: RequestMetaMetadata) {
-    const parameters: RequestMetaMetadataParameters = endpoint.parameters || {};
+    const parameters: RequestMetaMetadataParameters =
+            merge(endpoint.constraints || {}, endpoint.parameters || {});
     if ('schema' in parameters) {
       this.rules = {
         parameters: {schema: parameters.schema},
@@ -43,8 +44,7 @@ export class Constraints {
       this.paramsSchema = true;
       return;
     }
-    let rules: Rules = endpoint.constraints || {};
-    console.log(rules);
+    let rules: Rules =  {};
     for (const k of Object.keys(parameters)) {
       if (!rules[k]) {
         rules[k] = {};
@@ -90,10 +90,10 @@ export class Constraints {
     }
     this.rules = rules;
   }
-  public test(args: RequestArgs, ctx?: Context): any {
+  public test(args: RequestArgs, ctx?: Context, syncano?: Server): Promise<any> {
     if (this.paramsSchema) {
-      return validate({parameters: args}, this.rules, {ctx});
+      return validate({parameters: args}, this.rules, {ctx, syncano});
     }
-    return validate(args, this.rules, {ctx});
+    return validate(args, this.rules, {ctx, syncano});
   }
 }

@@ -43,11 +43,14 @@ export abstract class Validator {
       value,
       ...this.opts});
   }
-  public validate(value: any): ValidationResult {
-    if (this.test(value, (this.globalOptions || {}).ctx )) {
-      return undefined;
-    }
-    return {[this.validatorName]: this.message(value)};
+  public validate(value: any): Promise<ValidationResult> {
+    return this.test(value, (this.globalOptions || {}).ctx )
+        .then((valid: boolean) => {
+          if (!valid) {
+            return undefined;
+          }
+          return {[this.validatorName]: this.message(value)};
+        });
   }
-  public abstract test(value: any, ctx?: Context): boolean;
+  public abstract test(value: any, ctx?: Context): Promise<boolean>;
 }

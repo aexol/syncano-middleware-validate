@@ -24,6 +24,6 @@ export declare abstract class Validator {
     protected attributes: IAttribs;
     constructor(validatorName: string, opts: any, key: string, attributes: object, globalOptions?: IOptions | undefined);
     message(value: any): (string | ErrorObject[]);
-    validate(value: any): ValidationResult;
-    abstract test(value: any, ctx?: Context): boolean;
+    validate(value: any): Promise<ValidationResult>;
+    abstract test(value: any, ctx?: Context): Promise<boolean>;
 }

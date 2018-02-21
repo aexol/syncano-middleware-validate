@@ -20,8 +20,8 @@ validateJs.validators.oneOf = oneOf;
 validateJs.validators.schema = schema;
 validateJs.validators.type = type;
 
-const validateFn: any = (args: any, constraints: any, options?: any): any => {
-  return validateJs(args, constraints, options);
+const validateFn: any = (args: any, constraints: any, options?: any): Promise<any> => {
+  return validateJs.async(args, constraints, options);
 };
 export default validateFn;
 export const validators = validateJs.validators;

@@ -9,18 +9,22 @@ import {HandlerFn,
 import { Constraints } from './constraints';
 import { MetaParser } from './meta_parser';
 import { IConstraintsWithContext, NamedMetaParser } from './socket_info_parser';
-import { ValidationResult } from './validate';
+import { ValidationResult } from './validator';
 
 export class ValidatePlugin {
   constructor(private handler: HandlerFn,
               private endpointMeta: Constraints) {}
   public async handle(ctx: Context,
                       syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> {
-    const validationResult = this.endpointMeta.test(ctx.args || {}, ctx);
-    if (validationResult) {
-      return response(validationResult, 400);
-    }
-    return this.handler(ctx, syncano);
+    return this.endpointMeta.test(ctx.args || {},
+                                  ctx,
+                                  syncano)
+    .then(validationResult => {
+      if (validationResult) {
+        return response(validationResult, 400);
+      }
+      return this.handler(ctx, syncano);
+    });
   }
 }
 
@@ -45,10 +49,11 @@ export default (handler: HandlerFn): HandlerFn =>
 
 export async function validateByEndpointName( args: any,
                                               ctx: Context,
-                                              endpointName: string):
+                                              endpointName: string,
+                                              syncano?: Server):
                                               Promise<ValidationResult> {
   return makeNamedValidator(ctx, endpointName)
-      .then(v => v.constraints.test(args, v.context));
+      .then(v => v.constraints.test(args, v.context, syncano));
 }
 
 export { validators } from './validators';

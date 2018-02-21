@@ -23,7 +23,7 @@ export class OneOf extends Validator {
     }
   }
 
-  public test(value: any): boolean {
+  public async test(value: any): Promise<boolean> {
     const checkValue = (v: any) =>
       validateJs.isDefined(v) && !validateJs.isEmpty(v);
     let count: number = 0;
@@ -39,5 +39,5 @@ export class OneOf extends Validator {
   }
 }
 
-export default (value: any, opts: any, key: string, attributes: object): ValidationResult =>
+export default (value: any, opts: any, key: string, attributes: object): Promise<ValidationResult> =>
   (new OneOf(opts, key, attributes).validate(value));
