@@ -43,10 +43,10 @@ export abstract class Validator {
       value,
       ...this.opts});
   }
-  public validate(value: any): Promise<ValidationResult> {
+  public async validate(value: any): Promise<ValidationResult> {
     return this.test(value, (this.globalOptions || {}).ctx )
         .then((valid: boolean) => {
-          if (!valid) {
+          if (valid) {
             return undefined;
           }
           return {[this.validatorName]: this.message(value)};

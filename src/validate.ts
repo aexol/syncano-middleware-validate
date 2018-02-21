@@ -19,12 +19,8 @@ export class ValidatePlugin {
     return this.endpointMeta.test(ctx.args || {},
                                   ctx,
                                   syncano)
-    .then(validationResult => {
-      if (validationResult) {
-        return response(validationResult, 400);
-      }
-      return this.handler(ctx, syncano);
-    });
+    .then(() => this.handler(ctx, syncano))
+    .catch(e => response(e, 400));
   }
 }
 

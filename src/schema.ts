@@ -68,6 +68,9 @@ export class Schema extends Validator {
   }
 
   private makeId(schemaId: string): string {
+    if (this.syncano) {
+      return `${this.syncano.endpoint._url(this.socket + '/' + this.endpoint)}${schemaId}/schema`;
+    }
     return  `http://local/schemas/${schemaId}/schema`;
   }
 
@@ -101,7 +104,7 @@ export class Schema extends Validator {
       return nodeFetch(socketYml)
         .then(r => r.buffer())
         .then(b => yaml.safeLoad(b.toString()))
-        .then((socketJson: ISocketJSON) => console.log(socketJson) || socketJson);
+        .then((socketJson: ISocketJSON) => socketJson);
     })
     .catch(e => undefined);
   }

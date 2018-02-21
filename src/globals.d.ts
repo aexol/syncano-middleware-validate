@@ -135,6 +135,7 @@ declare module '@syncano/core' {
     put<T>(endpoint: string,
       data?: object,
       optionsi?: FetchOptions): Promise<T>
+    _url(socketName: string): string
   }
 
   export interface Channel extends QueryBuilder {
