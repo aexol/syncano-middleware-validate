@@ -44,6 +44,7 @@ export class Constraints {
       return;
     }
     let rules: Rules = endpoint.constraints || {};
+    console.log(rules);
     for (const k of Object.keys(parameters)) {
       if (!rules[k]) {
         rules[k] = {};

@@ -12,4 +12,5 @@ export declare class MetaParser {
     private makeConstraints(ctx);
     private patchMeta(ctx);
     private sconstraints(ctx);
+    private getMethod(ctx);
 }

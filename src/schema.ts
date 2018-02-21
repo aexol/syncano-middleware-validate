@@ -5,7 +5,8 @@ import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
 
 function makeAjv(): Ajv.Ajv {
-  const ajv = new Ajv();
+  const ajv = new Ajv({$data: true});
+  ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
   require('ajv-merge-patch')(ajv);
   require('ajv-keywords')(ajv);
   return ajv;

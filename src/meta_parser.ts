@@ -1,5 +1,7 @@
 import Server, { Context, RequestMetaMetadata, RequestMetaRequest } from '@syncano/core';
+import find from 'lodash.find';
 import get from 'lodash.get';
+import set from 'lodash.set';
 import { Constraints } from './constraints';
 
 export class MetaParser {
@@ -26,35 +28,10 @@ export class MetaParser {
   private makeConstraints(ctx: Context) {
     const metadata = this.getMetadata(ctx);
     const constraints =  new Constraints(this.patchMeta(ctx));
-    if (metadata.constraint) {
-      switch (this.getMetaRequest(ctx).REQUEST_METHOD) {
-        case 'GET':
-          if ( metadata.constraints.get) {
-            this.getConstraints = constraints;
-            return;
-          }
-          break;
-        case 'POST':
-          if ( metadata.constraints.post) {
-            this.postConstraints = constraints;
-            return;
-          }
-          break;
-        case 'PUT':
-          if ( metadata.constraints.put) {
-            this.putConstraints = constraints;
-            return;
-          }
-          break;
-        case 'DELETE':
-          if ( metadata.constraints.delete ) {
-            this.deleteConstraints = constraints;
-            return;
-          }
-          break;
-      }
-    }
-    this.constraints = constraints;
+    const method = this.getMethod(ctx);
+    const setTarget = method ?
+          method.toLowerCase() + 'Constraints' : 'constraints';
+    set(this, setTarget, constraints);
   }
 
   private patchMeta(ctx: Context): RequestMetaMetadata {
@@ -62,38 +39,31 @@ export class MetaParser {
     if (!metadata.constraints) {
       return metadata;
     }
-    let constraints: any;
-    switch (this.getMetaRequest(ctx).REQUEST_METHOD) {
-      case 'GET':
-        constraints = metadata.constraints.get || metadata.constraints;
-        break;
-      case 'POST':
-        constraints = metadata.constraints.post || metadata.constraints;
-        break;
-      case 'PUT':
-        constraints = metadata.constraints.put || metadata.constraints;
-        break;
-      case 'DELETE':
-        constraints = metadata.constraints.delete || metadata.constraints;
-        break;
-      default:
-        constraints = metadata.constraints;
-    }
+    const method = this.getMethod(ctx);
+    const constraints =  method ? get(metadata.constraints,
+                        method.toLowerCase(),
+                        metadata.constraints) : metadata.constraints;
+
     return {...metadata, constraints};
   }
 
   private sconstraints(ctx: Context): (Constraints|undefined) {
-    switch (this.getMetaRequest(ctx).REQUEST_METHOD) {
-      case 'GET':
-        return this.getConstraints || this.constraints;
-      case 'POST':
-        return this.postConstraints || this.constraints;
-      case 'PUT':
-        return this.putConstraints || this.constraints;
-      case 'DELETE':
-        return this.deleteConstraints || this.constraints;
-      default:
-        return this.constraints;
+    const method = this.getMethod(ctx);
+    if (!method) {
+      return this.constraints;
     }
+    return get(this,
+              method.toLowerCase() + 'Constraints',
+            this.constraints);
+  }
+
+  private getMethod(ctx: Context): (string|undefined) {
+    const method = this.getMetaRequest(ctx).REQUEST_METHOD;
+    return find([
+      'DELETE',
+      'GET',
+      'POST',
+      'PUT',
+    ], v => v === method);
   }
 }
