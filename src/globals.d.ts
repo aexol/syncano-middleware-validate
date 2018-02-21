@@ -44,6 +44,7 @@ declare module '@syncano/core' {
     api_host?: string;
     space_host?: string;
     metadata?: RequestMetaMetadataParameters;
+    name?: string;
   }
 
   export interface Context {
