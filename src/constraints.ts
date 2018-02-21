@@ -37,9 +37,9 @@ export class Constraints {
   constructor(endpoint: RequestMetaMetadata) {
     const parameters: RequestMetaMetadataParameters =
             merge(endpoint.constraints || {}, endpoint.parameters || {});
-    if ('schema' in parameters) {
+    if ('$schema' in parameters) {
       this.rules = {
-        parameters: {schema: parameters.schema},
+        parameters: {$schema: parameters.$schema},
       };
       this.paramsSchema = true;
       return;

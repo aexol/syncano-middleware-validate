@@ -1,7 +1,9 @@
 import Server, { Context, Headers } from '@syncano/core';
 import Ajv from 'ajv';
+import { readFileSync } from 'fs';
 import yaml from 'js-yaml';
 import get from 'lodash.get';
+import merge from 'lodash.merge';
 import nodeFetch from 'node-fetch';
 import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
@@ -38,7 +40,7 @@ export class Schema extends Validator {
               key: string,
               attributes: object,
               globalOptions?: object) {
-    opts = {schema: get(opts, 'schema', opts)};
+    opts = {schema: get(opts, '$schema', opts)};
     super('schema', opts, key, attributes, globalOptions);
     this.syncano   = get(this, 'globalOptions.syncano');
     this.ctx       = get(this, 'globalOptions.ctx');
@@ -69,12 +71,12 @@ export class Schema extends Validator {
 
   private makeId(schemaId: string): string {
     if (this.syncano) {
-      return `${this.syncano.endpoint._url(this.socket + '/' + this.endpoint)}${schemaId}/schema`;
+      return `${this.syncano.endpoint._url(this.socket + '/' + this.endpoint)}${schemaId}/$schema`;
     }
-    return  `http://local/schemas/${schemaId}/schema`;
+    return  `http://local/schemas/${schemaId}/$schema`;
   }
 
-  private async fetchSocketJSON(): Promise<ISocketJSON|undefined> {
+  private async fetchSocketJSON(): Promise<any> {
     if (!this.syncano) {
       return;
     }
@@ -110,9 +112,40 @@ export class Schema extends Validator {
   }
 
   private async makeSocketSchema() {
-    const socketJson = await this.fetchSocketJSON();
+    let socketJson = await this.fetchSocketJSON();
     if (!socketJson) {
       return;
+    }
+    for (const k of Object.keys(socketJson)) {
+      if (k === '$source') {
+
+        try {
+          let fn = socketJson[k];
+          if (!(fn.startsWith('/'))) {
+            fn = '/app/code/' + fn;
+          }
+          const extraYaml = yaml.safeLoad(readFileSync(fn).toString());
+          socketJson = merge(socketJson, extraYaml);
+        } catch (e) {
+          // Just pass
+        }
+        continue;
+      }
+      if (typeof socketJson[k] !== 'object') {
+        continue;
+      }
+      if ('$source' in socketJson[k]) {
+        try {
+          let fn = socketJson[k].$source;
+          if (!(fn.startsWith('/'))) {
+            fn = '/app/code/' + fn;
+          }
+          const extraYaml = yaml.safeLoad(readFileSync(fn).toString());
+          socketJson[k] = extraYaml;
+        } catch (e) {
+          // Just pass
+        }
+      }
     }
     const socketId: string = this.makeId(this.socket);
     this.ajv.addSchema({
@@ -138,7 +171,13 @@ export class Schema extends Validator {
       $id: this.paramId,
     });
     this.makeEndpointSchema();
-    await this.makeSocketSchema();
+    try {
+      await this.makeSocketSchema();
+    } catch (e) {
+      if (this.syncano) {
+        this.syncano.logger(`${this.socket}/${this.endpoint}`).error(e);
+      }
+    }
     return this.ajv.getSchema(this.paramId);
   }
 

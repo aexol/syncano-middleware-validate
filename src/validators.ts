@@ -17,7 +17,7 @@ validateJs.validators.defined = defined;
 validateJs.validators.empty = empty;
 validateJs.validators.match = match;
 validateJs.validators.oneOf = oneOf;
-validateJs.validators.schema = schema;
+validateJs.validators.$schema = schema;
 validateJs.validators.type = type;
 
 const validateFn: any = (args: any, constraints: any, options?: any): Promise<any> => {
