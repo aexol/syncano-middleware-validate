@@ -6,7 +6,7 @@ Library used to validate socket input based on socket.yml.
 
 ## Installation
 ```
-npm install syncano-middleware-validate
+npm install @aexol/syncano-middleware-validate
 ```
 
 ## Usage
