@@ -5,7 +5,9 @@
 Library used to validate socket input based on socket.yml.
 
 ## Installation
-npm install https://github.com/aexol/syncano-middleware-validate.git
+```
+npm install syncano-middleware-validate
+```
 
 ## Usage
 
@@ -16,7 +18,7 @@ This library depends on syncano-middleware lib. The basic socket example is
 ```yaml
 name: example
 description: Description of example
-version: 0.0.1
+version: 0.1.0
 runtime: nodejs_v8
 endpoints:
   hello:
@@ -27,8 +29,8 @@ endpoints:
 ```
 
 ```javascript
-import serve, {response} from 'syncano-middleware';
-import validate from 'syncano-middleware-validate';
+import serve, {response} from '@aexol/syncano-middleware';
+import validate from '@aexol/syncano-middleware-validate';
 
 async function run(ctx, syncano) {
     return response.success({message: 'Hello world'})

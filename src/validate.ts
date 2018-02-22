@@ -1,11 +1,11 @@
-import Server, { Context } from '@syncano/core';
 import {HandlerFn,
   IResponse,
   IResponsePayload,
   IResponseStatus,
   NamedResponse,
   response,
-} from 'syncano-middleware';
+} from '@aexol/syncano-middleware';
+import Server, { Context } from '@syncano/core';
 import { Constraints } from './constraints';
 import { MetaParser } from './meta_parser';
 import { IConstraintsWithContext, NamedMetaParser } from './socket_info_parser';

@@ -1,15 +1,17 @@
 {
-  "name": "syncano-middleware-validate",
+  "name": "@aexol/syncano-middleware-validate",
   "version": "0.0.1",
   "description": "Run syncano-validate library as middleware.",
   "main": "lib/validate.js",
   "types": "lib/validate.d.ts",
-  "repository": "https://gitlab.com/Aexol/syncano-middleware-validate.git",
+  "repository": "https://github.com/aexol/syncano-middleware-validate.git",
   "author": "Aexol",
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "rm -r lib && npx tsc"
+    "build": "rm -r lib && tsc",
+    "prepack": "npm run build && npm run test",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.20",
@@ -32,6 +34,7 @@
     "typescript": "^2.7.1"
   },
   "dependencies": {
+    "@aexol/syncano-middleware": "^0.1.0",
     "ajv": "^6.1.1",
     "ajv-keywords": "^3.1.0",
     "ajv-merge-patch": "^3.0.0",
@@ -46,7 +49,6 @@
     "lodash.unset": "^4.5.2",
     "node-fetch": "^2.0.0",
     "sprintf-js": "^1.1.1",
-    "syncano-middleware": "https://github.com/aexol/syncano-middleware.git",
     "validate.js": "^0.12.0"
   },
   "jest": {
