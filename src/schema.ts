@@ -3,7 +3,9 @@ import Ajv from 'ajv';
 import { readFileSync } from 'fs';
 import yaml from 'js-yaml';
 import get from 'lodash.get';
+import has from 'lodash.has';
 import merge from 'lodash.merge';
+import unset from 'lodash.unset';
 import nodeFetch from 'node-fetch';
 import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
@@ -14,6 +16,40 @@ function makeAjv(): Ajv.Ajv {
   require('ajv-merge-patch')(ajv);
   require('ajv-keywords')(ajv);
   return ajv;
+}
+
+function mergeWithFileContents( o: any, key: string, fn: string ): any {
+  try {
+    if (!(fn.startsWith('/'))) {
+      fn = '/app/code/' + fn;
+    }
+    const extraYaml = yaml.safeLoad(readFileSync(fn).toString());
+    o = merge(o, extraYaml);
+  } catch (e) {
+    // Just pass
+  }
+  return o;
+}
+
+export async function interpolateDeep(o: any, opts: any = {}): Promise<any> {
+  if (typeof o !== 'object') {
+    return o;
+  }
+  for (const k of Object.keys(o)) {
+    o[k] = interpolateDeep(o[k], opts);
+  }
+  const key: string = opts.key || '$source';
+  const mapFn: (o: any, key: string, value: any) => any =
+                    opts.mapFn || mergeWithFileContents;
+  const keepKey: boolean = opts.keepKey || false;
+  if (has(o, key)) {
+    const value = get(o, key);
+    if (!keepKey) {
+      unset(o, key);
+    }
+    o = await mapFn(o, key, value);
+  }
+  return o;
 }
 
 interface ISocketJSONFile {
@@ -112,44 +148,13 @@ export class Schema extends Validator {
   }
 
   private async makeSocketSchema() {
-    let socketJson = await this.fetchSocketJSON();
+    const socketJson = await this.fetchSocketJSON();
     if (!socketJson) {
       return;
     }
-    for (const k of Object.keys(socketJson)) {
-      if (k === '$source') {
-
-        try {
-          let fn = socketJson[k];
-          if (!(fn.startsWith('/'))) {
-            fn = '/app/code/' + fn;
-          }
-          const extraYaml = yaml.safeLoad(readFileSync(fn).toString());
-          socketJson = merge(socketJson, extraYaml);
-        } catch (e) {
-          // Just pass
-        }
-        continue;
-      }
-      if (typeof socketJson[k] !== 'object') {
-        continue;
-      }
-      if ('$source' in socketJson[k]) {
-        try {
-          let fn = socketJson[k].$source;
-          if (!(fn.startsWith('/'))) {
-            fn = '/app/code/' + fn;
-          }
-          const extraYaml = yaml.safeLoad(readFileSync(fn).toString());
-          socketJson[k] = extraYaml;
-        } catch (e) {
-          // Just pass
-        }
-      }
-    }
     const socketId: string = this.makeId(this.socket);
     this.ajv.addSchema({
-      ...socketJson,
+      ...(await interpolateDeep(socketJson)),
       $id: socketId,
     });
   }

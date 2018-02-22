@@ -1,5 +1,6 @@
 import { Context } from '@syncano/core';
 import { IValidationError, Validator } from './validator';
+export declare function interpolateDeep(o: any, opts?: any): Promise<any>;
 export declare class Schema extends Validator {
     private ajv;
     private paramId;
