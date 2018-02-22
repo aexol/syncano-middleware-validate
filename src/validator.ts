@@ -1,9 +1,10 @@
 import { Context } from '@syncano/core';
 import {ErrorObject} from 'ajv';
 import {sprintf} from 'sprintf-js';
+export {ErrorObject} from 'ajv';
 
 export interface IValidationError {
-  [s: string]: (string|ErrorObject[]);
+  [s: string]: string;
 }
 
 export interface IAttribs {
@@ -14,7 +15,7 @@ export interface IOptions {
   [s: string]: any;
 }
 
-export type ValidationResult = (IValidationError|undefined);
+export type ValidationResult = (IValidationError|ErrorObject[]|undefined);
 export interface IValidator {
   message(value: any): (string|ErrorObject[]);
   test(value: any): boolean;
@@ -32,9 +33,9 @@ export abstract class Validator {
     this.attributes = attributes;
     this.msg = opts.message || 'bad value %(value)s';
   }
-  public message(value: any): (string|ErrorObject[]) {
+  public message(value: any): (string|undefined) {
     if ( typeof this.msg !== 'string' ) {
-      return this.msg;
+      return;
     }
     return sprintf(this.msg, {
       attributes: this.attributes,
@@ -49,7 +50,10 @@ export abstract class Validator {
           if (valid) {
             return undefined;
           }
-          return {[this.validatorName]: this.message(value)};
+          if (Array.isArray(this.msg)) {
+            return this.msg;
+          }
+          return {[this.validatorName]: this.message(value) || 'unkown validation error'};
         });
   }
   public abstract test(value: any, ctx?: Context): Promise<boolean>;

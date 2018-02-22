@@ -1,5 +1,8 @@
 import validateJs from 'validate.js';
-import {IValidationError, ValidationResult, Validator} from './validator';
+import {ErrorObject,
+  IValidationError,
+  ValidationResult,
+Validator} from './validator';
 
 export class Defined extends Validator {
   constructor(opts: any, key: string, attributes: object) {

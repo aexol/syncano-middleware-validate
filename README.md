@@ -96,7 +96,7 @@ endpoints:
     parameters:
       world:
         $schema:
-          $ref: '../../schema#/Model'
+          $ref: '../../$schema#/Model'
 Model:
   type: object
   properties:
@@ -111,7 +111,7 @@ endpoints:
     parameters:
       world:
         $schema:
-          $ref: '../schema#/Model'
+          $ref: '../$schema#/Model'
   Model:
     type: object
     properties:
@@ -145,7 +145,7 @@ endpoints:
     parameters:
       world:
         $schema:
-          $ref: '../../schema#/Model'
+          $ref: '../../$schema#/Model'
 $source: schema.yml
 ```
 
@@ -168,7 +168,7 @@ endpoints:
   hello:
     parameters:
       $schema:
-        $ref: '../../schema#/HelloEndpoint'
+        $ref: '../../$schema#/HelloEndpoint'
 HelloEndpoint:
   type: object
   properties:
@@ -185,7 +185,7 @@ endpoints:
     constraints:
       post:
         $schema:
-          $ref: '../../schema#/HelloEndpoint'
+          $ref: '../../$schema#/HelloEndpoint'
 HelloEndpoint:
   type: object
   properties:

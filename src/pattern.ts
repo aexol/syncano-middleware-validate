@@ -1,5 +1,8 @@
 import validateJs from 'validate.js';
-import {IValidationError, ValidationResult, Validator} from './validator';
+import {ErrorObject,
+  IValidationError,
+  ValidationResult,
+Validator} from './validator';
 
 export class Match extends Validator {
   constructor(opts: any, key: string, attribtues: object) {

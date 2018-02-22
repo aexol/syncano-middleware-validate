@@ -3,10 +3,6 @@ import merge from 'lodash.merge';
 import { IValidationError } from './validator';
 import validate from './validators';
 
-const allOf = 'allOf';
-const anyOf = 'anyOf';
-const oneOf = 'oneOf';
-
 export interface IConstraint {
   contains?: (any[]|object);
   cleanAttributes?: string[];
