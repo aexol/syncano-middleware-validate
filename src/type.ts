@@ -7,7 +7,6 @@ import {IValidationError, ValidationResult, Validator} from './validator';
 interface ITypeTest {
   any: (value: any) => boolean;
   array: (value: any) => boolean;
-  enum: (value: any) => boolean;
   boolean: (value: any) => boolean;
   datetime: (value: any) => boolean;
   integer: (value: any) => boolean;
@@ -22,9 +21,6 @@ export class Type extends Validator {
     if (typeof opts === 'string') {
       opts = {type: opts};
     }
-    if ('enum' in opts) {
-      opts.type = 'enum';
-    }
     if (!('message' in opts)) {
         opts.message = '%(key)s must be %(type)s';
     }
@@ -37,14 +33,6 @@ export class Type extends Validator {
       array: validateJs.isArray,
       boolean: validateJs.isBoolean,
       datetime: validateJs.isDate,
-      enum: (v: any) => {
-        for (const e in this.opts.enum) {
-          if (isEqual(v, this.opts.enum[e])) {
-            return true;
-          }
-        }
-        return false;
-      },
       integer: validateJs.isInteger,
       number: validateJs.isNumber,
       object: validateJs.isObject,

@@ -36,7 +36,7 @@ export class Constraints {
   private paramsSchema?: boolean;
   constructor(endpoint: RequestMetaMetadata) {
     const parameters: RequestMetaMetadataParameters =
-            merge(endpoint.constraints || {}, endpoint.parameters || {});
+            merge(endpoint.parameters || {}, endpoint.constraints || {});
     if ('$schema' in parameters) {
       this.rules = {
         parameters: {$schema: parameters.$schema},
@@ -49,44 +49,13 @@ export class Constraints {
       if (!rules[k]) {
         rules[k] = {};
       }
-      if ('schema' in parameters[k]) {
-          rules = merge(rules, {[k]: {schema: parameters[k].schema}});
-      }
-      if (!rules[k].type) {
-        if (parameters[k].type) {
-          rules = merge(rules, {[k]: {type: parameters[k].type}});
-        }
-      }
-      if (typeof rules[k].presence === 'undefined' ) {
+      if (typeof parameters[k].presence === 'undefined' ) {
         if (typeof parameters[k].required !== 'undefined' ) {
-          rules = merge(rules, {[k]: {presence: parameters[k].required}});
+          parameters[k].presence = parameters[k].required;
+          delete parameters[k].required;
         }
       }
-      rules = merge(rules, {[k]: parameters[k].constraints || {}});
-    }
-    // Check for anyOf object in constraints, skip if there exists parameter
-    // with that name.
-    if (anyOf in rules && !(anyOf in parameters)) {
-      for (const k of Object.keys(rules.anyOf)) {
-        rules = merge(rules, {[k]: {anyOf: rules.anyOf}});
-      }
-      delete rules.anyOf;
-    }
-    // Check for anyOf object in constraints, skip if there exists parameter
-    // with that name.
-    if (allOf in rules && !(allOf in parameters)) {
-      for (const k of Object.keys(rules.allOf)) {
-        rules = merge(rules, {[k]: {allOf: rules.allOf}});
-      }
-      delete rules.allOf;
-    }
-    // Check for oneOf object in constraints, skip if there exists parameter
-    // with that name.
-    if (oneOf in rules && !(oneOf in parameters)) {
-      for (const k of Object.keys(rules.oneOf)) {
-        rules = merge(rules, {[k]: {oneOf: rules.oneOf}});
-      }
-      delete rules.oneOf;
+      rules = merge(rules, {[k]: parameters[k] || {}});
     }
     this.rules = rules;
   }
