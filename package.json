@@ -1,6 +1,6 @@
 {
   "name": "@aexol/syncano-middleware-validate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run syncano-validate library as middleware.",
   "main": "lib/validate.js",
   "types": "lib/validate.d.ts",
