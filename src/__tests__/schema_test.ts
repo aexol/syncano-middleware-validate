@@ -1,13 +1,8 @@
 import {interpolateDeep} from '../schema';
 
-function mapFn(o: any, key: string, value: any) {
-  o.removed = {
-    [key]: value,
-  };
-  return o;
-}
 describe('Schema test', () => {
-  it('interpolate', () => {
+  it('interpolate', async () => {
+    const mapFnMock = jest.fn((...args) => args[0]);
     const o = {
       $source: 'value1',
       key1: {
@@ -20,22 +15,15 @@ describe('Schema test', () => {
       },
     };
     const expected = {
-      key1: {
-        removed: {
-          $source: 'value2',
-        },
-      },
+      key1: {},
       key2: {
-        key3: {
-          removed: {
-            $source: 'value3',
-          },
-        },
-      },
-      removed: {
-        $source: 'value1',
+        key3: {},
       },
     };
-    expect(interpolateDeep(o, {mapFn})).toEqual(expected);
+    expect(await interpolateDeep(o, {mapFn: mapFnMock})).toEqual(expected);
+    expect(mapFnMock.mock.calls.length).toBe(3);
+    expect(mapFnMock.mock.calls).toContainEqual([{}, '$source', 'value3']);
+    expect(mapFnMock.mock.calls).toContainEqual([{}, '$source', 'value2']);
+    expect(mapFnMock.mock.calls).toContainEqual([{key1: {}, key2:{key3: {}}}, '$source', 'value1']);
   });
 });

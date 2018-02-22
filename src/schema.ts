@@ -1,6 +1,7 @@
 import Server, { Context, Headers } from '@syncano/core';
 import Ajv from 'ajv';
-import { readFileSync } from 'fs';
+import bluebird from 'bluebird';
+import fs from 'fs';
 import yaml from 'js-yaml';
 import get from 'lodash.get';
 import has from 'lodash.has';
@@ -10,6 +11,8 @@ import nodeFetch from 'node-fetch';
 import validateJs from 'validate.js';
 import {IValidationError, ValidationResult, Validator} from './validator';
 
+const readFile = bluebird.promisify(fs.readFile);
+
 function makeAjv(): Ajv.Ajv {
   const ajv = new Ajv({$data: true});
   ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
@@ -18,12 +21,15 @@ function makeAjv(): Ajv.Ajv {
   return ajv;
 }
 
-function mergeWithFileContents( o: any, key: string, fn: string ): any {
+async function mergeWithFileContents( o: any,
+                                      key: string,
+                                      fn: string ): Promise<any> {
   try {
     if (!(fn.startsWith('/'))) {
       fn = '/app/code/' + fn;
     }
-    const extraYaml = yaml.safeLoad(readFileSync(fn).toString());
+    const extraYaml = await readFile(fn).
+                      then(b => yaml.safeLoad(b.toString()));
     o = merge(o, extraYaml);
   } catch (e) {
     // Just pass
@@ -35,9 +41,11 @@ export async function interpolateDeep(o: any, opts: any = {}): Promise<any> {
   if (typeof o !== 'object') {
     return o;
   }
-  for (const k of Object.keys(o)) {
-    o[k] = interpolateDeep(o[k], opts);
-  }
+  await bluebird.Promise.map(Object.keys(o), (k: string) => {
+    return interpolateDeep(o[k], opts).then(v => ({[k]: v}));
+  }).each( newK => {
+    merge(o, newK);
+  });
   const key: string = opts.key || '$source';
   const mapFn: (o: any, key: string, value: any) => any =
                     opts.mapFn || mergeWithFileContents;

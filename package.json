@@ -12,6 +12,7 @@
     "build": "rm -r lib && npx tsc"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.20",
     "@types/jest": "^22.1.2",
     "@types/js-yaml": "^3.7.0",
     "@types/lodash.find": "^4.6.3",
@@ -34,6 +35,7 @@
     "ajv": "^6.1.1",
     "ajv-keywords": "^3.1.0",
     "ajv-merge-patch": "^3.0.0",
+    "bluebird": "^3.5.1",
     "js-yaml": "^3.7.0",
     "lodash.find": "^4.6.0",
     "lodash.get": "^4.4.2",
