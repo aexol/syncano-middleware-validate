@@ -37,7 +37,7 @@ async function run(ctx, syncano) {
 export default ctx => serve(ctx, validate(run))
 ```
 
-For each point validation rules can be contained in two places, either parameters or constraints key of endpoint.
+For each point validation rules can be contained in two places, either parameters or constraints objects of endpoint.
 
 
 ### Parameters
@@ -62,10 +62,9 @@ endpoints:
 ```
 
 The difference between the two boils down to the fact that constraints allow
-for separate validation rules depending on request method (DELETE, GET, PUT, POST) while each key in parameters object is treated as input argument.
+for separate validation rules depending on request method (DELETE, GET, PUT, POST) while each property in parameters object is treated as input argument.
 
-For constraints object if it contains key matching lower case of request method
-contents of `constraints.${lcaseMethod}` will be used as validation rules.
+For constraints object if it contains property matching lower case of request method contents of `constraints.${lcaseMethod}` will be used as validation rules.
 
 Both objects, that is `parameters` and `constraints<.lcaseMethod>` are merged with constraints object having higher priority.
 
@@ -79,16 +78,16 @@ All validate.js validators are avilable, with some additional ones:
 * type - Check if object type matches (array, boolean, datetime, integer, number, object, string)
 * $schema - This is a special case validator for more complex scenarios, it takes either schema object or string with schema id as an argument and matches object against that schema. Schema must be a valid JSON Schema.
 
-##### $schema validator
+#### $schema validator
 
-From parameter's viewpoint schema validator has 3 available schema:
+From parameter's viewpoint schema validator has 3 available schemas:
 * socket schema
 * endpoint schema
 * parameter schema
 
 You can refer to each of those from parameter like so:
 
-######## socket schema
+###### socket schema
 ```yaml
 endpoints:
   hello:
@@ -103,7 +102,7 @@ Model:
       type: string
 ```
 
-######## endpoint schema
+##### endpoint schema
 ```yaml
 endpoints:
   hello:
@@ -118,7 +117,7 @@ endpoints:
         type: string
 ```
 
-######## parameter schema
+##### parameter schema
 ```yaml
 endpoints:
   hello:
@@ -133,7 +132,7 @@ endpoints:
               type: string
 ```
 
-Schema validator is also capable of extending socket.yml with external Yaml source using $source key. It will look for that file within app sources unless path to source starts with /.
+Schema validator is also capable of extending socket.yml with external Yaml source using $source property. It will look for that file within app sources unless path to source starts with /.
 
 $source keyword can apear anywhere in socket, object which contains that keyword will be extended with contents of referenced file.
 
@@ -148,7 +147,7 @@ endpoints:
 $source: schema.yml
 ```
 
-schema.yml
+src/schema.yml
 ```yaml
 Model:
   type: object
