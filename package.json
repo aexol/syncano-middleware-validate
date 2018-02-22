@@ -9,7 +9,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "rm -r lib && tsc",
+    "build": "rm -rf lib && tsc",
     "prepare": "npm run build",
     "prepack": "npm run test",
     "test": "jest"
