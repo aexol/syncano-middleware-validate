@@ -16,11 +16,15 @@ export class ValidatePlugin {
               private endpointMeta: Constraints) {}
   public async handle(ctx: Context,
                       syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> {
-    return this.endpointMeta.test(ctx.args || {},
-                                  ctx,
-                                  syncano)
-    .catch(e => response(e, 400))
-    .then(() => this.handler(ctx, syncano));
+    let c: Promise<any>;
+    try {
+      c = await this.endpointMeta.test(ctx.args || {},
+                                    ctx,
+                                    syncano);
+    } catch (e) {
+      return response(e, 400);
+    }
+    return this.handler(ctx, syncano);
   }
 }
 
