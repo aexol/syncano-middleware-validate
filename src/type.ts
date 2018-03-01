@@ -1,8 +1,11 @@
 import { Context } from '@syncano/core';
-import Ajv from 'ajv';
 import isEqual from 'lodash.isequal';
 import validateJs from 'validate.js';
-import {IValidationError, ValidationResult, Validator} from './validator';
+import {ErrorObject,
+  IValidationError,
+  ValidationResult,
+  Validator,
+} from './validator';
 
 interface ITypeTest {
   any: (value: any) => boolean;

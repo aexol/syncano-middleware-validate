@@ -38,7 +38,7 @@ async function mergeWithFileContents( o: any,
 }
 
 export async function interpolateDeep(o: any, opts: any = {}): Promise<any> {
-  if (typeof o !== 'object') {
+  if (!o || typeof o !== 'object') {
     return o;
   }
   await bluebird.Promise.map(Object.keys(o), (k: string) => {
@@ -92,9 +92,7 @@ export class Schema extends Validator {
                       get(this, 'ctx.meta.name') ||
                       'socket/endpoint');
     this.name      = `${this.name}/${key}`;
-    this.socket    = this.name.split('/')[0];
-    this.endpoint  = this.name.split('/')[1];
-    this.parameter = this.name.split('/')[2];
+    [this.socket, this.endpoint, this.parameter] = this.name.split('/');
     this.ajv = this.name === `socket/endpoint/${key}` ? makeAjv() : globalAjv;
     this.paramId = this.makeId(this.name);
   }
@@ -115,7 +113,8 @@ export class Schema extends Validator {
 
   private makeId(schemaId: string): string {
     if (this.syncano) {
-      return `${this.syncano.endpoint._url(this.socket + '/' + this.endpoint)}${schemaId}/$schema`;
+      const {instanceName, spaceHost} = this.syncano.instance.instance;
+      return `https://${instanceName}.${spaceHost}/${schemaId}/$schema`;
     }
     return  `http://local/schemas/${schemaId}/$schema`;
   }
@@ -152,7 +151,17 @@ export class Schema extends Validator {
         .then(b => yaml.safeLoad(b.toString()))
         .then((socketJson: ISocketJSON) => socketJson);
     })
-    .catch(e => undefined);
+    .catch(e => {
+      if (this.syncano) {
+        this.syncano.logger(
+          get(this,
+            'ctx.meta.executor',
+            'syncano-middleware-validate',
+          ),
+        ).error(e.message);
+      }
+      return undefined;
+    });
   }
 
   private async makeSocketSchema() {
@@ -179,16 +188,20 @@ export class Schema extends Validator {
   }
 
   private async makeSchema(): Promise<Ajv.ValidateFunction> {
-    this.ajv.addSchema({
-      ...this.opts.schema,
-      $id: this.paramId,
-    });
-    this.makeEndpointSchema();
     try {
+      this.ajv.addSchema({
+        ...this.opts.schema,
+        $id: this.paramId,
+      });
+      this.makeEndpointSchema();
       await this.makeSocketSchema();
     } catch (e) {
       if (this.syncano) {
-        this.syncano.logger(`${this.socket}/${this.endpoint}`).error(e);
+        const ePayload = e.message || e.response || e;
+        this.syncano.logger(`${this.socket}/${this.endpoint}`).error(ePayload);
+        if (e.stack) {
+          this.syncano.logger(`${this.socket}/${this.endpoint}`).error(e.stack);
+        }
       }
     }
     return this.ajv.getSchema(this.paramId);
