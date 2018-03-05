@@ -1,4 +1,4 @@
-import Server, { Context, Headers } from '@syncano/core';
+import Server, { Context, Headers, RequestArgs } from '@syncano/core';
 import Ajv from 'ajv';
 import bluebird from 'bluebird';
 import fs from 'fs';
@@ -8,10 +8,10 @@ import has from 'lodash.has';
 import merge from 'lodash.merge';
 import unset from 'lodash.unset';
 import nodeFetch from 'node-fetch';
-import validateJs from 'validate.js';
-import {IValidationError, ValidationResult, Validator} from './validator';
+import path from 'path';
 
 const readFile = bluebird.promisify(fs.readFile);
+const stat = bluebird.promisify(fs.stat);
 
 function makeAjv(): Ajv.Ajv {
   const ajv = new Ajv({$data: true});
@@ -19,45 +19,6 @@ function makeAjv(): Ajv.Ajv {
   require('ajv-merge-patch')(ajv);
   require('ajv-keywords')(ajv);
   return ajv;
-}
-
-async function mergeWithFileContents( o: any,
-                                      key: string,
-                                      fn: string ): Promise<any> {
-  try {
-    if (!(fn.startsWith('/'))) {
-      fn = '/app/code/' + fn;
-    }
-    const extraYaml = await readFile(fn).
-                      then(b => yaml.safeLoad(b.toString()));
-    o = merge(o, extraYaml);
-  } catch (e) {
-    // Just pass
-  }
-  return o;
-}
-
-export async function interpolateDeep(o: any, opts: any = {}): Promise<any> {
-  if (typeof o !== 'object') {
-    return o;
-  }
-  await bluebird.Promise.map(Object.keys(o), (k: string) => {
-    return interpolateDeep(o[k], opts).then(v => ({[k]: v}));
-  }).each( newK => {
-    merge(o, newK);
-  });
-  const key: string = opts.key || '$source';
-  const mapFn: (o: any, key: string, value: any) => any =
-                    opts.mapFn || mergeWithFileContents;
-  const keepKey: boolean = opts.keepKey || false;
-  if (has(o, key)) {
-    const value = get(o, key);
-    if (!keepKey) {
-      unset(o, key);
-    }
-    o = await mapFn(o, key, value);
-  }
-  return o;
 }
 
 interface ISocketJSONFile {
@@ -71,56 +32,87 @@ interface ISocketJSON {
 }
 
 const globalAjv = makeAjv();
-export class Schema extends Validator {
-  private ajv: Ajv.Ajv;
+
+export interface ISchemaOpts {
+  ctx: Context;
+  syncano?: Server;
+  socketFile?: string;
+}
+export class Schema {
+  public ajv: Ajv.Ajv;
   private paramId: string;
   private name: string;
   private socket: string;
   private endpoint: string;
+  private method: string;
   private parameter: string;
-  private ctx?: Context;
+  private ctx: Context;
+  private socketFile?: string;
   private syncano?: Server;
-  constructor(opts: any,
-              key: string,
-              attributes: object,
-              globalOptions?: object) {
-    opts = {schema: get(opts, '$schema', opts)};
-    super('schema', opts, key, attributes, globalOptions);
-    this.syncano   = get(this, 'globalOptions.syncano');
-    this.ctx       = get(this, 'globalOptions.ctx');
+  constructor(opts: ISchemaOpts) {
+    this.syncano   = opts.syncano;
+    this.ctx       = opts.ctx;
     this.name      = (get(this, 'ctx.meta.executor') ||
                       get(this, 'ctx.meta.name') ||
                       'socket/endpoint');
-    this.name      = `${this.name}/${key}`;
+    this.socketFile = opts.socketFile;
+    this.method = get(this, 'ctx.meta.request.REQUEST_METHOD', '*');
+    this.name      = `${this.name}/${this.method}-inputs`;
     this.socket    = this.name.split('/')[0];
     this.endpoint  = this.name.split('/')[1];
     this.parameter = this.name.split('/')[2];
-    this.ajv = this.name === `socket/endpoint/${key}` ? makeAjv() : globalAjv;
+    this.ajv = this.name === `socket/endpoint/${this.method}-inputs` ? makeAjv() : globalAjv;
     this.paramId = this.makeId(this.name);
   }
 
-  public async test(value: any, ctx?: Context): Promise<boolean> {
-    if (!validateJs.isDefined(value)) {
-      return true;
-    }
+  public async validate(args: RequestArgs): Promise<boolean> {
     const validate = await this.getSchema();
-    if (!validate(value)) {
-      this.msg =  this.opts.message ||
-                  validate.errors ||
-                  'does not match schema';
-      return false;
+    const valid = await validate(args);
+    if (!valid) {
+      throw validate.errors;
     }
-    return true;
+    return valid;
+  }
+
+  private async loadYamlSchema(fn: string): Promise<object|undefined> {
+    try {
+      const getFilename = async () => {
+        if (fn.startsWith('/')) {
+          return fn;
+        }
+        // Is it a local run with socket file path?
+        // If not attempt to find app path by 'main' script.
+        const rootDir = this.socketFile ?
+          path.join(path.dirname(this.socketFile), 'src') :
+          path.dirname(get(require, 'main.filename'));
+        return stat(path.join(rootDir, fn)).then(s => {
+          if (s) {
+              return path.join(rootDir, fn);
+            }
+            // Try current workdir.
+          return fn;
+        });
+      };
+      return getFilename().then(
+        (f: string) => readFile(f).then(b => yaml.safeLoad(b.toString())));
+    } catch (e) {
+      // Just pass
+    }
+    return;
   }
 
   private makeId(schemaId: string): string {
     if (this.syncano) {
-      return `${this.syncano.endpoint._url(this.socket + '/' + this.endpoint)}${schemaId}/$schema`;
+      const {spaceHost, instanceName} = this.syncano.instance.instance;
+      return `https://${instanceName}.${spaceHost}/${schemaId}`;
     }
-    return  `http://local/schemas/${schemaId}/$schema`;
+    return  `http://local/schemas/${schemaId}`;
   }
 
   private async fetchSocketJSON(): Promise<any> {
+    if (this.socketFile) {
+      return readFile(this.socketFile).then(b => yaml.safeLoad(b.toString()));
+    }
     if (!this.syncano) {
       return;
     }
@@ -162,9 +154,37 @@ export class Schema extends Validator {
     }
     const socketId: string = this.makeId(this.socket);
     this.ajv.addSchema({
-      ...(await interpolateDeep(socketJson)),
+      ...socketJson,
       $id: socketId,
     });
+    if (socketJson.schemas) {
+      const schemaPromises = [];
+      for (const schema of Object.keys(socketJson.schemas)) {
+        // Embeded schema in socket.
+        let p: Promise<any>;
+        if (typeof socketJson.schemas[schema] === 'object') {
+          p = Promise.resolve({
+            $id: `${socketId}/${schema}`,
+            ...socketJson.schemas[schema],
+          });
+        } else {
+          // Try to open schema file.
+          p = this.loadYamlSchema(socketJson.schemas[schema]).then(
+            schemaObj => ({
+              $id: `${socketId}/${schema}`,
+              ...schemaObj,
+            }),
+          );
+        }
+        if (p) {
+          schemaPromises.push(p);
+        }
+      }
+      const schemas = await Promise.all(schemaPromises);
+      for (const schema of schemas) {
+        this.ajv.addSchema(schema);
+      }
+    }
   }
 
   private makeEndpointSchema() {
@@ -179,8 +199,10 @@ export class Schema extends Validator {
   }
 
   private async makeSchema(): Promise<Ajv.ValidateFunction> {
+    const inputs = get(this, `ctx.meta.metadata.inputs.${this.method}`) ||
+      get(this, 'ctx.meta.metadata.inputs') || {};
     this.ajv.addSchema({
-      ...this.opts.schema,
+      ...inputs,
       $id: this.paramId,
     });
     this.makeEndpointSchema();
@@ -198,10 +220,3 @@ export class Schema extends Validator {
     return await this.ajv.getSchema(this.paramId) || await this.makeSchema();
   }
 }
-
-export default (value: any,
-                opts: any,
-                key: string,
-                attributes: object,
-                globalOptions?: object): Promise<ValidationResult> =>
-  (new Schema(opts, key, attributes, globalOptions).validate(value));

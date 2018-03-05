@@ -1,56 +1,16 @@
-import {HandlerFn,
-  IResponse,
-  IResponsePayload,
-  IResponseStatus,
-  NamedResponse,
-  response,
-} from '@aexol/syncano-middleware';
+import {HandlerFn, HandlerReturn, response} from '@aexol/syncano-middleware';
 import Server, { Context } from '@syncano/core';
-import { Constraints } from './constraints';
-import { MetaParser } from './meta_parser';
-import { IConstraintsWithContext, NamedMetaParser } from './socket_info_parser';
-import { ValidationResult } from './validator';
+import { Schema } from './schema';
 
-export class ValidatePlugin {
-  constructor(private handler: HandlerFn,
-              private endpointMeta: Constraints) {}
-  public async handle(ctx: Context,
-                      syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> {
-    return this.endpointMeta.test(ctx.args || {},
-                                  ctx,
-                                  syncano)
-    .then(() => this.handler(ctx, syncano))
-    .catch(e => response(e, 400));
-  }
-}
+export default (handler: HandlerFn) =>
+  async (ctx: Context, syncano: Server): Promise<HandlerReturn> => {
+    const schema = new Schema({ctx, syncano});
+    try {
+      await schema.validate(ctx.args || {});
+    } catch (e) {
+      return response(e, 400);
+    }
+    return handler(ctx, syncano);
+  };
 
-const metaParser = new MetaParser();
-async function makeValidator( ctx: Context,
-                              handler: HandlerFn): Promise<ValidatePlugin> {
-  return metaParser
-    .getMeta(ctx)
-    .then(endpointMeta => new ValidatePlugin(handler, endpointMeta));
-}
-
-const namedMetaParser = new NamedMetaParser();
-async function makeNamedValidator( ctx: Context, endpointName: string ):
-                              Promise<IConstraintsWithContext> {
-  return namedMetaParser.getMeta(ctx, endpointName);
-}
-
-export default (handler: HandlerFn): HandlerFn =>
-  (ctx: Context, syncano: Server): Promise<IResponse|IResponsePayload|IResponseStatus|NamedResponse> =>
-      makeValidator(ctx, handler)
-      .then(validator => validator.handle(ctx, syncano));
-
-export async function validateByEndpointName( args: any,
-                                              ctx: Context,
-                                              endpointName: string,
-                                              syncano?: Server):
-                                              Promise<ValidationResult> {
-  return makeNamedValidator(ctx, endpointName)
-      .then(v => v.constraints.test(args, v.context, syncano));
-}
-
-export { validators } from './validators';
-export { ValidationResult } from './validator';
+export {Schema} from './schema';
