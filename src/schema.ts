@@ -21,6 +21,31 @@ function makeAjv(): Ajv.Ajv {
   return ajv;
 }
 
+async function fetchSocketYml(syncano: Server, socket: string): Promise<Buffer> {
+    const {instanceName, host} = get(syncano, 'socket.instance', {});
+    if (!instanceName) {
+      throw new Error('Missing instance name');
+    }
+    const token = syncano.socket.instance.token;
+    if (!token) {
+      throw new Error('Missing token');
+    }
+    const headers: Headers = {
+        'X-API-KEY': token,
+      };
+    const url = syncano.socket.url(socket);
+
+    return new Promise<ISocketJSON|undefined>((resolve: any, reject: any)  => {
+      syncano.socket.fetch(url, {}, headers)
+        .then((v: ISocketJSON) => resolve(v))
+        .catch(reject);
+    }).then(socketMeta => {
+      const socketYml = get(socketMeta, ['files', 'socket.yml', 'file']);
+      return nodeFetch(socketYml)
+        .then(r => r.buffer());
+    });
+}
+
 interface ISocketJSONFile {
   file: string;
 }
@@ -37,6 +62,8 @@ export interface ISchemaOpts {
   ctx: Context;
   syncano?: Server;
   socketFile?: string;
+  endpoint?: string;
+  method?: string;
 }
 export class Schema {
   public ajv: Ajv.Ajv;
@@ -52,11 +79,12 @@ export class Schema {
   constructor(opts: ISchemaOpts) {
     this.syncano   = opts.syncano;
     this.ctx       = opts.ctx;
-    this.name      = (get(this, 'ctx.meta.executor') ||
+    this.name      = (opts.endpoint ||
+                      get(this, 'ctx.meta.executor') ||
                       get(this, 'ctx.meta.name') ||
                       'socket/endpoint');
     this.socketFile = opts.socketFile;
-    this.method = get(this, 'ctx.meta.request.REQUEST_METHOD', '*');
+    this.method = opts.method || get(this, 'ctx.meta.request.REQUEST_METHOD', '*');
     this.name      = `${this.name}/${this.method}-inputs`;
     this.socket    = this.name.split('/')[0];
     this.endpoint  = this.name.split('/')[1];
@@ -120,7 +148,7 @@ export class Schema {
     if (!instanceName) {
       return;
     }
-    const token = this.syncano.socket.instance.token || this.syncano.socket.instance.token;
+    const token = this.syncano.socket.instance.token;
     if (!token) {
         return;
       }
@@ -129,22 +157,10 @@ export class Schema {
       };
     const url = this.syncano.socket.url(this.socket);
 
-    return new Promise<ISocketJSON|undefined>((resolve: any, reject: any): (ISocketJSON|undefined) => {
-      if (!this.syncano) {
-        resolve();
-        return;
-      }
-      this.syncano.socket.fetch(url, {}, headers)
-        .then((v: ISocketJSON) => resolve(v))
-        .catch(reject);
-    }).then(socketMeta => {
-      const socketYml = get(socketMeta, ['files', 'socket.yml', 'file']);
-      return nodeFetch(socketYml)
-        .then(r => r.buffer())
-        .then(b => yaml.safeLoad(b.toString()))
-        .then((socketJson: ISocketJSON) => socketJson);
-    })
-    .catch(e => undefined);
+    return fetchSocketYml(this.syncano, this.socket)
+      .then(b => yaml.safeLoad(b.toString()))
+      .then((socketJson: ISocketJSON) => socketJson)
+      .catch(e => undefined);
   }
 
   private async makeSocketSchema() {
