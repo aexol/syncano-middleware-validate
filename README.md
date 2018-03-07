@@ -13,7 +13,7 @@ npm install @aexol/syncano-middleware-validate
 
 This library depends on syncano-middleware lib. The basic socket example is
 
-#### socket.yml
+### socket.yml
 
 ```yaml
 name: example
@@ -56,62 +56,39 @@ endpoints:
           - world
 ```
 
-###### socket schema
+## Available schemas
+* #/ (https://{instanceName}.syncano.space/${socketName}) - Your socket.yml as schema
+* http://local/meta - Metadata as a schema. In case of missing socket.yml schema this becomes your root schema.
+* {schemaName}#/ - Extra schema for any schemas defined in `schemas` property of socket.yml. `schemas` property must be an object of key: value pairs where value must be either valid JSON Schema object or file containing schema in src directory of socket.
+
+To use model from socket for example you can do this:
+
 ```yaml
 endpoints:
   hello:
     inputs:
-      world:
-        $ref: '../../#/Model'
+      GET:
+        $ref: '#/Model'
 Model:
   type: object
   properties:
-    name:
+    world:
       type: string
+  required:
+    - world
 ```
 
-##### endpoint schema
+To use extra schemas you can do:
+
+socket.yml:
 ```yaml
 endpoints:
   hello:
     inputs:
-      world:
-        $ref: '../#/Model'
-  Model:
-    type: object
-    properties:
-      name:
-        type: string
-```
-
-##### parameter schema
-```yaml
-endpoints:
-  hello:
-    inputs:
-      world:
-        $schema:
-          $ref: '#/Model'
-        Model:
-          type: object
-          properties:
-            name:
-              type: string
-```
-
-You can add external schemas with schemas property. Schema files must be placed in src directory of socket. Schema properties are key: value pairs
-where key is schema id and value must be either schema object or file name in src directory.
-
-socket.yml
-```yaml
-endpoints:
-  hello:
-    inputs:
-      world:
-        $schema:
-          $ref: '../schema#/Model'
-schema:
-  schema: schema.yml
+      GET:
+        $ref: 'main#/Model'
+schemas:
+  main: schema.yml
 ```
 
 src/schema.yml
@@ -119,6 +96,11 @@ src/schema.yml
 Model:
   type: object
   properties:
-    name:
+    world:
       type: string
+  required:
+    - world
 ```
+
+TODO:
+* Support extension detection for extra schemas.
