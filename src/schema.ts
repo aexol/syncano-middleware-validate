@@ -224,13 +224,17 @@ export class SchemaBuilder {
     }, this.paramId(ref));
   }
 
+  private get endpointName() {
+    return this.name.split('/')[1];
+  }
+
   private get metaId() {
     return 'http://local/meta';
   }
 
   private get refRoot() {
     if (this.ajv.getSchema(this.socketId)) {
-      return `${this.socketId}#/endpoints/`;
+      return `${this.socketId}#/endpoints/${this.endpointName}/`;
     }
     return `${this.metaId}#/`;
   }

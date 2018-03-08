@@ -101,16 +101,17 @@ describe('schema test', () => {
       },
     };
     const socketYaml = `endpoints:
-    inputs:
-      GET:
-        type: object
-        properties:
-          id:
-            type: number
-        required:
-          - id
-      POST:
-        $ref: '#/Model'
+    endpoint:
+      inputs:
+        GET:
+          type: object
+          properties:
+            id:
+              type: number
+          required:
+            - id
+        POST:
+          $ref: '#/Model'
 Model:
   type: object
   properties:
@@ -180,16 +181,17 @@ Model:
       },
     };
     const socketYaml = `endpoints:
-    inputs:
-      GET:
-        type: object
-        properties:
-          id:
-            type: number
-        required:
-          - id
-      POST:
-        $ref: 'main#/Model'
+    endpoint:
+      inputs:
+        GET:
+          type: object
+          properties:
+            id:
+              type: number
+          required:
+            - id
+        POST:
+          $ref: 'main#/Model'
 schemas:
   main:
     Model:
