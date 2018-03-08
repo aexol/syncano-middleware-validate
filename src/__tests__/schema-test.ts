@@ -122,7 +122,7 @@ Model:
     - firstname
     - lastname
 `;
-    const getSchema = new InputValidator({
+    const gctx = {
       meta: {
         metadata: {
           inputs,
@@ -131,9 +131,8 @@ Model:
           REQUEST_METHOD: 'GET',
         },
       },
-      socketFile: Buffer.from(socketYaml),
-    });
-    const postSchema = new InputValidator({
+    };
+    const pctx = {
       meta: {
         metadata: {
           inputs,
@@ -142,14 +141,29 @@ Model:
           REQUEST_METHOD: 'POST',
         },
       },
+    };
+    const opts = {
+        ctx: {
+          meta: {
+            metadata: {
+              inputs,
+            },
+        },
+      },
       socketFile: Buffer.from(socketYaml),
-    });
+    };
+    const getSchema = new InputValidator(gctx, opts);
+    const postSchema = new InputValidator(pctx, opts);
     await expect(getSchema.validate({
       id: 1,
     })).resolves.toBe(true);
-    await expect(getSchema.validate({
-      firstname: 'First',
-    })).rejects.toThrow();
+    try {
+      await expect(getSchema.validate({
+        firstname: 'First',
+      })).rejects.toThrow();
+    } catch (e) {
+      console.log(getSchema.schema.ajv);
+    }
     await expect(postSchema.validate({
       firstname: 'First',
       lastname: 'Last',
@@ -189,17 +203,19 @@ schemas:
         - firstname
         - lastname
 `;
-    const postSchema = new InputValidator({
-      meta: {
-        metadata: {
-          inputs,
+    const ctx = {
+        meta: {
+          metadata: {
+            inputs,
+          },
+          request: {
+            REQUEST_METHOD: 'POST',
+          },
         },
-        request: {
-          REQUEST_METHOD: 'POST',
-        },
-      },
-      socketFile: Buffer.from(socketYaml),
-    });
+      };
+    const postSchema = new InputValidator(ctx,
+      {ctx, socketFile: Buffer.from(socketYaml)},
+    );
     await expect(postSchema.validate({
       firstname: 'First',
       lastname: 'Last',

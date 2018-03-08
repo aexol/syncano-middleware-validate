@@ -214,12 +214,13 @@ export class SchemaBuilder {
   }
 
   private paramId(ref: string) {
+    ref = `${this.refRoot}${ref}`;
     return ref.substr(ref.search('#') + 2).replace('/', '-');
   }
 
   private makeRefSchema(ref: string) {
     this.ajv.addSchema({
-      $ref: ref,
+      $ref: `${this.refRoot}${ref}`,
     }, this.paramId(ref));
   }
 
@@ -262,7 +263,6 @@ export class SchemaBuilder {
         $id: this.metaId,
       });
     }
-    targetRef = `${this.refRoot}${targetRef}`;
     this.makeRefSchema(targetRef);
     return this.ajv.getSchema(this.paramId(targetRef));
   }
