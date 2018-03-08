@@ -1,25 +1,23 @@
-import {Schema} from '../schema';
+import {InputValidator} from '../inputs';
 describe('schema test', () => {
   it('test inputs', async () => {
-    const schema = new Schema({
-      ctx: {
-        meta: {
-          metadata: {
-            inputs: {
-              properties: {
-                firstname: {
-                  type: 'string',
-                },
-                lastname: {
-                  type: 'string',
-                },
+    const schema = new InputValidator({
+      meta: {
+        metadata: {
+          inputs: {
+            properties: {
+              firstname: {
+                type: 'string',
               },
-              required: [
-                'firstname',
-                'lastname',
-              ],
-              type: 'object',
+              lastname: {
+                type: 'string',
+              },
             },
+            required: [
+              'firstname',
+              'lastname',
+            ],
+            type: 'object',
           },
         },
       },
@@ -61,27 +59,23 @@ describe('schema test', () => {
         type: 'object',
       },
     };
-    const getSchema = new Schema({
-      ctx: {
-        meta: {
-          metadata: {
-            inputs,
-          },
-          request: {
-            REQUEST_METHOD: 'GET',
-          },
+    const getSchema = new InputValidator({
+      meta: {
+        metadata: {
+          inputs,
+        },
+        request: {
+          REQUEST_METHOD: 'GET',
         },
       },
     });
-    const postSchema = new Schema({
-      ctx: {
-        meta: {
-          metadata: {
-            inputs,
-          },
-          request: {
-            REQUEST_METHOD: 'POST',
-          },
+    const postSchema = new InputValidator({
+      meta: {
+        metadata: {
+          inputs,
+        },
+        request: {
+          REQUEST_METHOD: 'POST',
         },
       },
     });
@@ -128,28 +122,24 @@ Model:
     - firstname
     - lastname
 `;
-    const getSchema = new Schema({
-      ctx: {
-        meta: {
-          metadata: {
-            inputs,
-          },
-          request: {
-            REQUEST_METHOD: 'GET',
-          },
+    const getSchema = new InputValidator({
+      meta: {
+        metadata: {
+          inputs,
+        },
+        request: {
+          REQUEST_METHOD: 'GET',
         },
       },
       socketFile: Buffer.from(socketYaml),
     });
-    const postSchema = new Schema({
-      ctx: {
-        meta: {
-          metadata: {
-            inputs,
-          },
-          request: {
-            REQUEST_METHOD: 'POST',
-          },
+    const postSchema = new InputValidator({
+      meta: {
+        metadata: {
+          inputs,
+        },
+        request: {
+          REQUEST_METHOD: 'POST',
         },
       },
       socketFile: Buffer.from(socketYaml),
@@ -199,15 +189,13 @@ schemas:
         - firstname
         - lastname
 `;
-    const postSchema = new Schema({
-      ctx: {
-        meta: {
-          metadata: {
-            inputs,
-          },
-          request: {
-            REQUEST_METHOD: 'POST',
-          },
+    const postSchema = new InputValidator({
+      meta: {
+        metadata: {
+          inputs,
+        },
+        request: {
+          REQUEST_METHOD: 'POST',
         },
       },
       socketFile: Buffer.from(socketYaml),

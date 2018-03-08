@@ -1,10 +1,10 @@
 import {HandlerFn, HandlerReturn, response} from '@aexol/syncano-middleware';
 import Server, { Context } from '@syncano/core';
-import { Schema } from './schema';
+import { InputValidator } from './inputs';
 
 export default (handler: HandlerFn) =>
   async (ctx: Context, syncano: Server): Promise<HandlerReturn> => {
-    const schema = new Schema({ctx, syncano});
+    const schema = new InputValidator(ctx, {ctx, syncano});
     try {
       await schema.validate(ctx.args || {});
     } catch (e) {
@@ -13,4 +13,5 @@ export default (handler: HandlerFn) =>
     return handler(ctx, syncano);
   };
 
-export {Schema} from './schema';
+export {SchemaBuilder} from './schema';
+export {InputValidator} from './inputs';

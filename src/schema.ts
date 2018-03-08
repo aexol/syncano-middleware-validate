@@ -63,44 +63,38 @@ export interface ISchemaOpts {
   syncano?: Server;
   socketFile?: string|Buffer;
   endpoint?: string;
-  method?: string;
   metaOnly?: boolean;
 }
-export class Schema {
+export class SchemaBuilder {
   public ajv: Ajv.Ajv;
   private metaOnly?: boolean;
   private name: string;
-  private socket: string;
-  private endpoint: string;
-  private method: string;
-  private parameter: string;
   private ctx: Context;
   private socketFile?: string|Buffer;
   private syncano?: Server;
   constructor(opts: ISchemaOpts) {
     this.syncano   = opts.syncano;
     this.ctx       = opts.ctx;
-    this.metaOnly = opts.metaOnly;
+    this.metaOnly  = opts.metaOnly;
     this.name      = (opts.endpoint ||
                       get(this, 'ctx.meta.executor') ||
                       get(this, 'ctx.meta.name') ||
                       'socket/endpoint');
     this.socketFile = opts.socketFile;
-    this.method = opts.method || get(this, 'ctx.meta.request.REQUEST_METHOD', '*');
-    this.name      = `${this.name}/${this.method}-inputs`;
-    this.socket    = this.name.split('/')[0];
-    this.endpoint  = this.name.split('/')[1];
-    this.parameter = this.name.split('/')[2];
-    this.ajv = this.name === `socket/endpoint/${this.method}-inputs` ? makeAjv() : globalAjv;
+    this.ajv = this.name === 'socket/endpoint' ? makeAjv() : globalAjv;
   }
 
-  public async validate(args: RequestArgs): Promise<boolean> {
-    const validate = await this.getSchema();
-    const valid = await validate(args);
-    if (!valid) {
-      throw validate.errors;
-    }
-    return valid;
+  public async getSchema(targetRef: string): Promise<Ajv.ValidateFunction> {
+    return await this.ajv.getSchema(this.paramId(targetRef)) ||
+        await this.makeSchema(targetRef);
+  }
+
+  // Hack to avoid unnecessary download of socket.yml upstream.
+  private async socketInAppCode(): Promise<boolean> {
+    return stat('/app/code/_socket.yml').then(s => {
+        return true;
+      },
+    ).catch(() => false);
   }
 
   private async loadYamlSchema(fn: string|Buffer): Promise<object|undefined> {
@@ -150,36 +144,42 @@ export class Schema {
     if (!this.syncano) {
       return;
     }
-    const {instanceName, host} = get(this, 'syncano.socket.instance', {});
-    if (!instanceName) {
-      return;
-    }
-    const token = this.syncano.socket.instance.token;
-    if (!token) {
+    let pb: Promise<Buffer>;
+    if (await this.socketInAppCode()) {
+      pb = new Promise((resolve, reject) => {
+        readFile('/app/code/_socket.yml').then(resolve).catch(reject);
+      });
+    } else {
+      const {instanceName, host} = get(this, 'syncano.socket.instance', {});
+      if (!instanceName) {
         return;
       }
-    const headers: Headers = {
-        'X-API-KEY': token,
-      };
-    const url = this.syncano.socket.url(this.socket);
+      const token = this.syncano.socket.instance.token;
+      if (!token) {
+          return;
+        }
+      const headers: Headers = {
+          'X-API-KEY': token,
+        };
+      const url = this.syncano.socket.url(this.socketName);
+      pb = fetchSocketYml(this.syncano, this.socketName);
+    }
 
-    return fetchSocketYml(this.syncano, this.socket)
-      .then(b => yaml.safeLoad(b.toString()))
+    return pb
+      .then((b: Buffer) => yaml.safeLoad(b.toString()))
       .then((socketJson: ISocketJSON) => socketJson)
       .catch(e => undefined);
   }
 
-  private async makeSocketSchema(): Promise<boolean> {
-    if (this.metaOnly) {
-      return false;
-    }
-    // Socket schema already loaded?
-    if (this.ajv.getSchema(this.socketId)) {
-      return true;
+  private async makeSocketSchema() {
+    if (this.metaOnly ||
+      // Socket schema already loaded?
+      this.ajv.getSchema(this.socketId)) {
+      return;
     }
     const socketJson = await this.fetchSocketJSON();
     if (!socketJson) {
-      return false;
+      return;
     }
     this.ajv.addSchema({
       ...socketJson,
@@ -211,60 +211,59 @@ export class Schema {
       const schemas = await Promise.all(schemaPromises);
       schemas.forEach(v => this.ajv.addSchema(v));
     }
-    return true;
+  }
+
+  private paramId(ref: string) {
+    return ref.substr(ref.search('#') + 2).replace('/', '-');
   }
 
   private makeRefSchema(ref: string) {
     this.ajv.addSchema({
       $ref: ref,
-    }, this.paramId);
+    }, this.paramId(ref));
   }
 
-  private get paramId() {
-    return `${this.method}-thisParam`;
+  private get metaId() {
+    return 'http://local/meta';
+  }
+
+  private get refRoot() {
+    if (this.ajv.getSchema(this.socketId)) {
+      return `${this.socketId}#/endpoints/`;
+    }
+    return `${this.metaId}#/`;
+  }
+
+  private get socketName() {
+    return this.name.split('/')[0];
   }
 
   private get socketRoot() {
-    return this.makeId(this.socket);
+    return this.makeId(this.socketName);
   }
 
   private get socketId() {
     return  this.socketRoot + '/socket.yml';
   }
 
-  private async makeSchema(): Promise<Ajv.ValidateFunction> {
-    let ref = '';
-    let hasSocketSchema = false;
+  private async makeSchema(targetRef: string): Promise<Ajv.ValidateFunction> {
     try {
-      hasSocketSchema = await this.makeSocketSchema();
-      ref = get(this, `ctx.meta.metadata.inputs.${this.method}`) ?
-        `${this.socketId}#/endpoints/inputs/${this.method}` :
-        `${this.socketId}#/endpoints/inputs`;
+      await this.makeSocketSchema();
     } catch (e) {
       if (this.syncano) {
-        this.syncano.logger(`${this.socket}/${this.endpoint}`).error(e);
+        this.syncano.logger(this.name).error(e);
       }
     }
 
     // Create schema based on local metadata.
-    const metaId = 'http://local/meta';
-    if (!this.ajv.getSchema(metaId)) {
+    if (!this.ajv.getSchema(this.metaId)) {
       this.ajv.addSchema({
         ...get(this, 'ctx.meta.metadata'),
-        $id: metaId,
+        $id: this.metaId,
       });
     }
-    if (!hasSocketSchema) {
-      ref = get(this, `ctx.meta.metadata.inputs.${this.method}`) ?
-        `${metaId}#/inputs/${this.method}` :
-        `${metaId}#/inputs`;
-    }
-    this.makeRefSchema(ref);
-    const schema = this.ajv.getSchema(this.paramId);
-    return schema;
-  }
-
-  private async getSchema(): Promise<Ajv.ValidateFunction> {
-    return await this.ajv.getSchema(this.paramId) || await this.makeSchema();
+    targetRef = `${this.refRoot}${targetRef}`;
+    this.makeRefSchema(targetRef);
+    return this.ajv.getSchema(this.paramId(targetRef));
   }
 }
